@@ -24,7 +24,6 @@ export default defineConfig({
 
     plugins: [
         svelte(),
-
         viteStaticCopy({
             targets: [
                 {

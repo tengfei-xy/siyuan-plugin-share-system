@@ -1,15 +1,14 @@
 {
-  "name": "plugin-sample-vite-svelte",
-  "author": "frostime",
-  "url": "https://github.com/siyuan-note/plugin-sample-vite-svelte",
-  "version": "0.3.4",
+  "name": "siyuan-plugin-share-tool",
+  "author": "tengfei-xy",
+  "url": "https://github.com/tengfei-xy/siyuan-plugin-share-system",
+  "version": "0.0.1",
   "minAppVersion": "3.0.0",
   "backends": [
     "windows",
     "linux",
-    "darwin",
-    "ios",
-    "android"
+    "darwin"
+
   ],
   "frontends": [
     "desktop",
@@ -19,12 +18,12 @@
     "desktop-window"
   ],
   "displayName": {
-    "en_US": "Plugin sample with vite and svelte",
-    "zh_CN": "插件样例 vite + svelte 版"
+    "en_US": "Share note taking tools",
+    "zh_CN": "分享笔记工具"
   },
   "description": {
-    "en_US": "SiYuan plugin sample with vite and svelte",
-    "zh_CN": "使用 vite 和 svelte 开发的思源插件样例"
+    "en_US": "A sharing tool for sharing personal notes to the public network!",
+    "zh_CN": "一种分享工具，为个人笔记分享至公网！"
   },
   "readme": {
     "en_US": "README.md",
@@ -36,6 +35,9 @@
     ]
   },
   "keywords": [
-    "plugin", "sample", "插件样例"
+    "plugin", "open", "share"
+  ],
+  "repos": [
+    "tengfei-xy/siyuan-plugin-share-tool"
   ]
 }

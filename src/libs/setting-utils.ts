@@ -57,10 +57,10 @@ export class SettingUtils {
         return data;
     }
 
+    // 导出数据为json格式
     async save() {
         let data = this.dump();
         await this.plugin.saveData(this.file, this.dump());
-        console.debug('Save config:', data);
         return data;
     }
 
@@ -82,7 +82,7 @@ export class SettingUtils {
     }
 
     /**
-     * 将设置项目导出为 JSON 对象
+     * 遍历设置，将设置项目导出为 JSON 对象
      * @returns object
      */
     dump(): Object {
@@ -155,6 +155,7 @@ export class SettingUtils {
             case 'button':
                 let buttonElement: HTMLButtonElement = document.createElement('button');
                 buttonElement.className = "b3-button b3-button--outline fn__flex-center fn__size200";
+
                 buttonElement.innerText = item.button?.label ?? 'Button';
                 buttonElement.onclick = item.button?.callback ?? (() => {});
                 itemElement = buttonElement;
@@ -171,14 +172,19 @@ export class SettingUtils {
             description: item?.description,
             createActionElement: () => {
                 let element = this.getElement(item.key);
-                return element;
+                return element; 
             }
         })
-    }
+    } 
 
     getElement(key: string) {
         let item = this.settings.get(key);
         let element = this.elements.get(key) as any;
+        // 额外增加的
+        // 当选项被删除时，
+        if (element === undefined) {
+            return 
+        }
         switch (item.type) {
             case 'checkbox':
                 element.checked = item.value;

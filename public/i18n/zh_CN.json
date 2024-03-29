@@ -16,6 +16,18 @@
         "makesure": "使用这个模板之前，请阅读<a href=\"https://github.com/siyuan-note/plugin-sample\">官方教程</a>, 确保自己已经理解了插件的基本开发流程。"
     },
     "hintTitle":"关于",
-    "hintDesc":"<a href='https://github.com/siyuan-note/plugin-sample-vite-svelte'>🔗 plugin-sample-vite-svelte</a><br>💻 @frostime<br>💻 @88250<br>💻 @zxkmm"
+    "hintDesc":"1. 当前版本为测试版（功能不稳定,被分享的链接有可能会被清理），参考<a href='https://github.com/tengfei-xy/siyuan-plugin-share-system' >项目开源地址</a><br>2. 暂仅支持从电脑端分享链接，原因网页端有个TypeError: fs.readdirSync is not a function. (In 'fs.readdirSync(directoryPath的错误，但作者暂时无法解决，并非是一般的网页端无法导出的问题。<br>3. 微信联系方式: uBpHJlVdn5k15G3dhLh1",
+    "memu_share_link_title":"分享地址",
+    "menu_address_title" : "分享系统的后台地址",
+    "menu_address_desc" : "默认为http://124.223.15.220,欢迎自行搭建",
+    "menu_delete_share_title" : "删除",
+    "menu_delete_share_label" : "删除共享",
+    "menu_create_share_title" : "创建",
+    "menu_create_share_label" : "创建共享",
+    "menu_create_share_desc" : "对于已经分享地址，如果原页面有变化，请重新更新。变化的内容包括文字或主题样式。请勿多次重复点击此按钮。",
+    "memu_access_code_title" : "访问授权码",
+    "memu_access_code_desc" : "如果有，请填写。适用于在非客户端环境（比如非回环地址的网页端或者开启授权码的环境）调用,请从设置中获取",
 
+    "err_upload" : "上传失败,请从控制台查看或联系作者",
+    "log_upload_address_desc":"上传地址"
 }
