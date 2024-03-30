@@ -33,6 +33,8 @@ Export the html file and upload it to the web server. The web server also genera
 
 ## Release Notes
 
+- v0.0.2: The latest version, fixes the problem that the client cannot upload due to cache directory error
+
 - v0.0.1: The latest version, with basic creation and sharing and deletion sharing functions
 
 

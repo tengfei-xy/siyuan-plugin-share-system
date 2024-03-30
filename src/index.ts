@@ -622,7 +622,7 @@ export default class PluginSample extends Plugin {
             zip.file(fileName, fs.readFileSync(filePath))
         }
 
-        zip.generateAsync({//设置压缩格式，开始打包
+        await zip.generateAsync({//设置压缩格式，开始打包
             type: "nodebuffer",//nodejs用
             compression: "DEFLATE",//压缩算法
             compressionOptions: {//压缩级别
@@ -661,11 +661,30 @@ export default class PluginSample extends Plugin {
     // 参数: dir 表示需要压缩的html文件夹路径
     // 返回参数: IFuncData.err 表示请求是否成功
     // 返回参数: IFuncData.data 表示返回消息
-    async uploadFile(serverAddress, dir, appid, docid) {
+    async uploadFile(serverAddress) {
+        let savePath : string
+        let appid = await this.getSystemID()
+        let docid = await this.getActivePage()
+
+        let system_info = await this.getsystemInfo()
+        // 如果是mac
+        if (system_info.os == "darwin") {
+            savePath = "/tmp/" + docid
+        } else if (system_info.os == "windows") {
+            savePath = system_info.homeDir + "\\AppData\\Local\\Temp\\" + docid
+        } else{
+            savePath = "/tmp/" + docid
+        }
+        // 获取用户名
+
+        let content = await this.exportHtml(docid, savePath)
+        if (content == "") {
+            return
+        }
 
 
-        const zip_file = dir + ".zip"
-        this.compressFolder(dir, zip_file)
+        const zip_file = savePath + ".zip"
+        await this.compressFolder(savePath, zip_file)
 
         serverAddress = serverAddress + '/api/upload_file' + `?appid=${appid}&docid=${docid}`
 
@@ -691,7 +710,7 @@ export default class PluginSample extends Plugin {
                 console.debug(response.data)
                 if (data.err == 0) {
                     g.err = false
-                    g.fdata = data.data
+                    g.fdata = content
                     return g
                 } else {
                     g.fdata = data.msg
@@ -709,7 +728,17 @@ export default class PluginSample extends Plugin {
     // 功能: 上传分享文档的参数到分享服务器
     // 返回参数: IFuncData.err 表示请求是否成功
     // 返回参数: IFuncData.data 表示返回链接
-    async uploadArgs(server_address: String, data: IUploadArgsReq) {
+    async uploadArgs(server_address: string,content:string) {
+        let docid = await this.getActivePage()
+        let data: IUploadArgsReq = {
+            appid: await this.getSystemID(),
+            docid: docid,
+            content: content,
+            version: Constants.SIYUAN_VERSION,
+            theme: await this.getTheme(),
+            title: await this.getDocTitle(docid)
+        };
+
         let url = server_address + "/api/upload_args"
         console.debug(`${this.i18n.log_upload_address_desc}:${url}\nappid:${data.appid}\ndocid:${data.docid}\nversion:${data.version}\ntheme:${data.theme}\ntitle:${data.title}`)
 
@@ -742,45 +771,19 @@ export default class PluginSample extends Plugin {
     // 返回参数: IFuncData.err 表示请求是否成功
     // 返回参数: IFuncData.data 表示返回链接
     async createLink() {
-        let savePath: String
-        let docid = await this.getActivePage()
 
-        let system_info = await this.getsystemInfo()
-        // 如果是mac
-        if (system_info.os == "darwin") {
-            savePath = "/tmp"
-        } else if (system_info.os == "win32") {
-            savePath = system_info.homeDir + "\\AppData\\Local\\Temp"
-        } else if (system_info.os == "linux") {
-            savePath = "/tmp"
-        }
-        // 获取用户名
 
-        savePath = system_info.dataDir + "/tmp_share/" + docid
-        let content = await this.exportHtml(docid, savePath)
-        if (content == "") {
-            return
-        }
-
-        let data: IUploadArgsReq = {
-            appid: await this.getSystemID(),
-            docid: docid,
-            content: content,
-            version: Constants.SIYUAN_VERSION,
-            theme: await this.getTheme(),
-            title: await this.getDocTitle(docid)
-        };
 
         let g: IFuncData = {
             err: true,
             fdata: ""
         }
         let server_address = this.settingUtils.get("address");
-        g = await this.uploadFile(server_address, savePath, data.appid, data.docid)
+        g = await this.uploadFile(server_address)
         if (g.err == true) {
             return g
         }
-        g = await this.uploadArgs(server_address, data)
+        g = await this.uploadArgs(server_address, g.fdata)
         return g
     }
 
