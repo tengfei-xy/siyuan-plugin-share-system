@@ -1,6 +1,6 @@
 # Siyuan Notes’ sharing note-taking tool
 
-[中文](./README_zh_CN.md)
+[English](./README.md)
 
 ## Note before use
 
@@ -23,7 +23,9 @@ Create button, suitable for first creation and subsequent update pages. An updat
 
 Other web pages will be gradually supported after the web page problems are fixed.
 
+**Log description**
 
+When debugging, please adjust the log level to "all levels" in the console.
 
 ## Principle
 
@@ -33,9 +35,11 @@ Export the html file and upload it to the web server. The web server also genera
 
 ## Release Notes
 
-- v0.0.2: The latest version, fixes the problem that the client cannot upload due to cache directory error
+- v0.0.3: The latest version, which solves the problem of compressed resource files on the Windows client.
 
-- v0.0.1: The latest version, with basic creation and sharing and deletion sharing functions
+- v0.0.2: Fixed the problem that the client could not upload due to cache directory error
+
+- v0.0.1: Has basic functions of creating shares and deleting shares
 
 
 

@@ -2,7 +2,7 @@
   "name": "siyuan-plugin-share-tool",
   "author": "tengfei-xy",
   "url": "https://github.com/tengfei-xy/siyuan-plugin-share-system",
-  "version": "0.0.2",
+  "version": "0.0.3",
   "minAppVersion": "3.0.0",
   "backends": [
     "windows",
@@ -18,8 +18,8 @@
     "desktop-window"
   ],
   "displayName": {
-    "en_US": "Share note taking tools",
-    "zh_CN": "分享笔记工具"
+    "en_US": "share notes",
+    "zh_CN": "分享笔记"
   },
   "description": {
     "en_US": "A sharing tool for sharing personal notes to the public network!",

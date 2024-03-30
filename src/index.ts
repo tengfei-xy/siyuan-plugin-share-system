@@ -619,6 +619,7 @@ export default class PluginSample extends Plugin {
         for (let i = 0; i < list.length; i++) {
             let filePath = list[i]
             let fileName = filePath.replace(targetDir, "")
+
             zip.file(fileName, fs.readFileSync(filePath))
         }
 
@@ -877,6 +878,8 @@ export default class PluginSample extends Plugin {
             label: "分享设置",
             click: async () => {
                 console.debug("打开设置")
+                this.settingUtils.set("share_link", "")
+
                 let g = await this.getLink()
                 if (g.err == false) {
                     this.settingUtils.set("share_link", g.fdata)
