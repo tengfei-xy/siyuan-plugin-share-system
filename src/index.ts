@@ -243,7 +243,7 @@ export default class PluginSample extends Plugin {
                     let g = await this.createLink()
                     if (g.err == false) {
                         this.settingUtils.set("share_link", g.fdata)
-                        pushMsg("创建成功",7000)
+                        pushMsg("创建成功", 7000)
                     } else {
                         pushErrMsg(g.fdata, 7000)
                     }
@@ -613,49 +613,30 @@ export default class PluginSample extends Plugin {
 
     }
 
-    async compressFolder(targetDir: string, outputFile: string) {
+    // 用jszip压缩文件夹
+    // 输入: 文件夹路径
+    // 输入: 保存路径
+    async compressFolder(folderPath, savePath) {
         let zip = new JSZIP();
-        let list = this.recurseDirectory(targetDir)
-        for (let i = 0; i < list.length; i++) {
-            let filePath = list[i]
-            let fileName = filePath.replace(targetDir, "")
-
-            zip.file(fileName, fs.readFileSync(filePath))
-        }
-
-        await zip.generateAsync({//设置压缩格式，开始打包
-            type: "nodebuffer",//nodejs用
-            compression: "DEFLATE",//压缩算法
-            compressionOptions: {//压缩级别
-                level: 9
+        let addFolderToZip = async (dir, zipFolder) => {
+            const entries = fs.readdirSync(dir, { withFileTypes: true });
+            for (let i = 0; i < entries.length; i++) {
+                const entry = entries[i];
+                const fullPath = path.join(dir, entry.name);
+                if (entry.isFile()) {
+                    zipFolder.file(entry.name, fs.readFileSync(fullPath));
+                } else if (entry.isDirectory()) {
+                    let folder = zipFolder.folder(entry.name);
+                    await addFolderToZip(fullPath, folder);
+                }
             }
-        }).then(function (content) {
-            fs.writeFileSync(outputFile, content, "utf-8");//将打包的内容写入 当前目录下的 result.zip中
-        });
-
+        };
+        await addFolderToZip(folderPath, zip);
+        let content = await zip.generateAsync({ type: "uint8array" });
+        fs.writeFileSync(savePath, content);
     }
 
-    recurseDirectory(directoryPath: String) {
-        const files: String[] = [];
-        // 获取文件夹中的所有文件和文件夹
-        const entries = fs.readdirSync(directoryPath, { withFileTypes: true });
 
-
-        for (const entry of entries) {
-            const entryPath = path.join(directoryPath, entry.name);
-
-            if (entry.isFile()) {
-                files.push(entryPath);
-                // console.debug("文件:",directoryPath+"/"+entry.name)
-            }
-            else if (entry.isDirectory()) {
-                // 递归文件夹并将其添加到文件数组中
-                files.push(...this.recurseDirectory(entryPath));
-            }
-        }
-
-        return files;
-    }
 
     // 功能: 上传导出的html文件夹的压缩包到分享服务器
     // 参数: serverAddress 表示服务器地址
@@ -698,7 +679,7 @@ export default class PluginSample extends Plugin {
         var headers = {
             'Content-Type': 'multipart/form-data',
         }
-        console.debug(`上传文件 文件地址:${zip_file} 后台地址:${serverAddress}`)
+        console.debug(`上传文件 文件地址:${ zip_file } 后台地址:${ serverAddress } `)
         // 发送请求
 
         let g: IFuncData = {
@@ -741,7 +722,7 @@ export default class PluginSample extends Plugin {
         };
 
         let url = server_address + "/api/upload_args"
-        console.debug(`${this.i18n.log_upload_address_desc}:${url}\nappid:${data.appid}\ndocid:${data.docid}\nversion:${data.version}\ntheme:${data.theme}\ntitle:${data.title}`)
+        console.debug(`${ this.i18n.log_upload_address_desc }:${ url } \nappid:${ data.appid } \ndocid:${ data.docid } \nversion:${ data.version } \ntheme:${ data.theme } \ntitle:${ data.title } `)
 
         let g: IFuncData = {
             err: true,
@@ -800,7 +781,7 @@ export default class PluginSample extends Plugin {
         const url = this.settingUtils.get("address") + "/api/getlink"
 
 
-        console.debug(`${this.i18n.log_upload_address_desc}:${url}\nappid:${data.appid}\ndocid:${data.docid}`)
+        console.debug(`${ this.i18n.log_upload_address_desc }:${ url } \nappid:${ data.appid } \ndocid:${ data.docid } `)
         return axios_plus.post(url, data)
             .then(function (response) {
                 let data: IRes = response.data
@@ -838,7 +819,7 @@ export default class PluginSample extends Plugin {
         };
         const url = this.settingUtils.get("address") + "/api/deletelink"
 
-        console.debug(`${this.i18n.log_upload_address_desc}:${url}\nappid:${data.appid}\ndocid:${data.docid}`)
+        console.debug(`${ this.i18n.log_upload_address_desc }:${ url } \nappid:${ data.appid } \ndocid:${ data.docid } `)
         return axios_plus.post(url, data)
             .then(function (response) {
                 let data: IRes = response.data

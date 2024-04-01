@@ -47,7 +47,6 @@ export class SettingUtils {
 
     async load() {
         let data = await this.plugin.loadData(this.file);
-        console.debug('Load config:', data);
         if (data) {
             for (let [key, item] of this.settings) {
                 item.value = data?.[key] ?? item.value;
