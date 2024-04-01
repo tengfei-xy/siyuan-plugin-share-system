@@ -29,5 +29,7 @@
     "memu_access_code_desc" : "如果有，请填写。适用于在非客户端环境（比如非回环地址的网页端或者开启授权码的环境）调用,请从设置中获取",
 
     "err_upload" : "上传失败,请从控制台查看或联系作者",
+    "err_network" : "网络错误",
+
     "log_upload_address_desc":"上传地址"
 }

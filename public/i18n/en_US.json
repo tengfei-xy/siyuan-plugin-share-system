@@ -29,5 +29,6 @@
     "memu_access_code_desc" : "If yes, please fill it in. It is suitable for calling in a non-client environment (such as a web page with a non-loopback address or an environment with authorization code enabled). Please get it from the settings",
 
     "err_upload" : "Upload failed, please check from the console or contact the author",
+    "err_network" : "Network error, please check the network",
     "log_upload_address_desc":"Upload address"
 }

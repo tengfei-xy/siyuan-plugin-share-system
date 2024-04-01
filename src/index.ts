@@ -644,7 +644,7 @@ export default class PluginSample extends Plugin {
     // 返回参数: IFuncData.err 表示请求是否成功
     // 返回参数: IFuncData.data 表示返回消息
     async uploadFile(serverAddress) {
-        let savePath : string
+        let savePath: string
         let appid = await this.getSystemID()
         let docid = await this.getActivePage()
 
@@ -654,7 +654,7 @@ export default class PluginSample extends Plugin {
             savePath = "/tmp/" + docid
         } else if (system_info.os == "windows") {
             savePath = system_info.homeDir + "\\AppData\\Local\\Temp\\" + docid
-        } else{
+        } else {
             savePath = "/tmp/" + docid
         }
         // 获取用户名
@@ -679,7 +679,7 @@ export default class PluginSample extends Plugin {
         var headers = {
             'Content-Type': 'multipart/form-data',
         }
-        console.debug(`上传文件 文件地址:${ zip_file } 后台地址:${ serverAddress } `)
+        console.debug(`上传文件 文件地址:${zip_file} 后台地址:${serverAddress} `)
         // 发送请求
 
         let g: IFuncData = {
@@ -710,7 +710,7 @@ export default class PluginSample extends Plugin {
     // 功能: 上传分享文档的参数到分享服务器
     // 返回参数: IFuncData.err 表示请求是否成功
     // 返回参数: IFuncData.data 表示返回链接
-    async uploadArgs(server_address: string,content:string) {
+    async uploadArgs(server_address: string, content: string) {
         let docid = await this.getActivePage()
         let data: IUploadArgsReq = {
             appid: await this.getSystemID(),
@@ -722,7 +722,7 @@ export default class PluginSample extends Plugin {
         };
 
         let url = server_address + "/api/upload_args"
-        console.debug(`${ this.i18n.log_upload_address_desc }:${ url } \nappid:${ data.appid } \ndocid:${ data.docid } \nversion:${ data.version } \ntheme:${ data.theme } \ntitle:${ data.title } `)
+        console.debug(`${this.i18n.log_upload_address_desc}:${url} \nappid:${data.appid} \ndocid:${data.docid} \nversion:${data.version} \ntheme:${data.theme} \ntitle:${data.title} `)
 
         let g: IFuncData = {
             err: true,
@@ -778,10 +778,11 @@ export default class PluginSample extends Plugin {
             appid: await this.getSystemID(),
             docid: await this.getActivePage(),
         };
+
         const url = this.settingUtils.get("address") + "/api/getlink"
 
 
-        console.debug(`${ this.i18n.log_upload_address_desc }:${ url } \nappid:${ data.appid } \ndocid:${ data.docid } `)
+        console.debug(`${this.i18n.log_upload_address_desc}:${url} \nappid:${data.appid} \ndocid:${data.docid} `)
         return axios_plus.post(url, data)
             .then(function (response) {
                 let data: IRes = response.data
@@ -819,7 +820,7 @@ export default class PluginSample extends Plugin {
         };
         const url = this.settingUtils.get("address") + "/api/deletelink"
 
-        console.debug(`${ this.i18n.log_upload_address_desc }:${ url } \nappid:${ data.appid } \ndocid:${ data.docid } `)
+        console.debug(`${this.i18n.log_upload_address_desc}:${url} \nappid:${data.appid} \ndocid:${data.docid} `)
         return axios_plus.post(url, data)
             .then(function (response) {
                 let data: IRes = response.data
@@ -861,9 +862,13 @@ export default class PluginSample extends Plugin {
                 console.debug("打开设置")
                 this.settingUtils.set("share_link", "")
 
-                let g = await this.getLink()
-                if (g.err == false) {
-                    this.settingUtils.set("share_link", g.fdata)
+                try {
+                    let g = await this.getLink()
+                    if (g.err == false) {
+                        this.settingUtils.set("share_link", g.fdata)
+                    }
+                } catch (error) {
+                    pushErrMsg(this.i18n.err_network, 7000)
                 }
                 this.openSetting();
             }
