@@ -171,7 +171,6 @@ export default class PluginSample extends Plugin {
     // private customTab: () => IModel;
     private isMobile: boolean;
     private settingUtils: SettingUtils;
-
     async onload() {
         this.data[STORAGE_NAME] = { readonlyText: "Readonly" };
 
@@ -194,7 +193,7 @@ export default class PluginSample extends Plugin {
         // 添加顶部菜单
         const topBarElement = this.addTopBar({
             icon: "iconFace",
-            title: this.i18n.addTopBarIcon,
+            title: this.i18n.topBarTitle,
             position: "right",
             callback: () => {
                 if (this.isMobile) {
@@ -239,7 +238,6 @@ export default class PluginSample extends Plugin {
             button: {
                 label: this.i18n.menu_create_share_label,
                 callback: async () => {
-
                     let g = await this.createLink()
                     if (g.err == false) {
                         this.settingUtils.set("share_link", g.fdata)
@@ -351,6 +349,7 @@ export default class PluginSample extends Plugin {
     uninstall() {
         console.debug("uninstall");
     }
+
 
     async getsystemInfo() {
         // 获取当前页的ID
@@ -594,7 +593,6 @@ export default class PluginSample extends Plugin {
                 'Content-Type': 'application/json'
             };
         }
-        console.debug(headers)
         return axios_plus.post(url, data, headers)
             .then(function (response) {
                 res_data = response.data
@@ -781,9 +779,12 @@ export default class PluginSample extends Plugin {
 
         const url = this.settingUtils.get("address") + "/api/getlink"
 
+        var headers = {
+            'Content-Type': 'application/json',
 
+        }
         console.debug(`${this.i18n.log_upload_address_desc}:${url} \nappid:${data.appid} \ndocid:${data.docid} `)
-        return axios_plus.post(url, data)
+        return axios.post(url, data, { headers, timeout: 300000 })
             .then(function (response) {
                 let data: IRes = response.data
                 console.debug(data)
@@ -867,9 +868,11 @@ export default class PluginSample extends Plugin {
                     if (g.err == false) {
                         this.settingUtils.set("share_link", g.fdata)
                     }
+
                 } catch (error) {
                     pushErrMsg(this.i18n.err_network, 7000)
                 }
+
                 this.openSetting();
             }
         });

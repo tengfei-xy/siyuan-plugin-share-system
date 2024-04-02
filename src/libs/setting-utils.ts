@@ -14,9 +14,8 @@ export class SettingUtils {
     name: string;
     file: string;
 
-    settings: Map<string, ISettingItem> = new Map();
+    settings: Map<string, ISettingItem> = new Map(); 
     elements: Map<string, HTMLElement> = new Map();
-
     constructor(plugin: Plugin, name?: string, callback?: (data: any) => void, width?: string, height?: string) {
         this.name = name ?? 'settings';
         this.plugin = plugin;
@@ -156,7 +155,7 @@ export class SettingUtils {
                 buttonElement.className = "b3-button b3-button--outline fn__flex-center fn__size200";
 
                 buttonElement.innerText = item.button?.label ?? 'Button';
-                buttonElement.onclick = item.button?.callback ?? (() => {});
+                buttonElement.onclick = item.button?.callback ?? (() => { });
                 itemElement = buttonElement;
                 break;
             case 'hint':
@@ -171,10 +170,10 @@ export class SettingUtils {
             description: item?.description,
             createActionElement: () => {
                 let element = this.getElement(item.key);
-                return element; 
+                return element;
             }
         })
-    } 
+    }
 
     getElement(key: string) {
         let item = this.settings.get(key);
@@ -182,7 +181,7 @@ export class SettingUtils {
         // 额外增加的
         // 当选项被删除时，
         if (element === undefined) {
-            return 
+            return
         }
         switch (item.type) {
             case 'checkbox':
