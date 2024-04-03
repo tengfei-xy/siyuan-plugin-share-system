@@ -28,6 +28,8 @@
     "memu_access_code_title" : "访问授权码",
     "memu_access_code_desc" : "如果有，请填写。适用于在非客户端环境（比如非回环地址的网页端或者开启授权码的环境）调用,请从设置中获取",
 
+    "memu_enable_browser_title": "启用浏览器导出",
+    "memu_enable_browser_desc": "启用后，可以在浏览器中导出",
     "err_upload" : "上传失败,请从控制台查看或联系作者",
     "err_network" : "网络错误",
 

@@ -158,7 +158,6 @@ export default class PluginSample extends Plugin {
     settingUtils: SettingUtils;
     async onload() {
         this.data[STORAGE_NAME] = { readonlyText: "Readonly" };
-
         console.debug("loading plugin-sample", this.i18n);
 
         const frontEnd = getFrontend();
@@ -262,6 +261,22 @@ export default class PluginSample extends Plugin {
             type: "textinput",
             title: this.i18n.memu_access_code_title,
             description: this.i18n.memu_access_code_desc,
+            
+        });
+        this.settingUtils.addItem({
+            key: "enable_browser",
+            value: false,
+            type: "checkbox",
+            title: this.i18n.memu_enable_browser_title,
+            description: this.i18n.memu_enable_browser_desc,
+            button: {
+                label: this.i18n.memu_enable_browser_label,
+                callback: async () => {
+                    const new_value = !this.settingUtils.get("enable_browser")
+                    this.settingUtils.set("enable_browser", new_value)
+                    this.uploadHost()
+                }
+            }
         });
         this.settingUtils.addItem({
             key: "Hint",
@@ -312,6 +327,7 @@ export default class PluginSample extends Plugin {
         //         }],
         // };
         console.debug(this.i18n.helloPlugin);
+
     }
 
     onLayoutReady() {
@@ -760,6 +776,36 @@ export default class PluginSample extends Plugin {
 
             })
     }
+    async uploadHost() {
+        let g :IFuncData = {
+            err: true,
+            data: ""
+        }
+        const data = {
+            appid: await this.getSystemID(),
+            host: window.location.protocol + "//" + window.location.host,
+            status: this.settingUtils.get("enable_browser")
+        }
+        const headers = {
+            'Content-Type': 'text/plain',
+        }
+        const server_address = this.settingUtils.get("address")
+        const url = server_address + "/api/upload_host"
+        return axios.post(url, data,{ headers })
+            .then(function (response) {
+                if (response.data.err == 0) {
+                    g.err = false
+                }else{
+                    g.data = response.data.msg
+                }
+                return g
+            })
+            .catch(function (error) {
+                console.error(error)
+                g.data = error
+                return g
+            })
+    }
     async uploadFileBrowserDesktop(serverAddress) {
         let appid = await this.getSystemID()
         let docid = await this.getActivePage()
@@ -1055,6 +1101,7 @@ export default class PluginSample extends Plugin {
                 this.settingUtils.set("share_link", "")
 
                 try {
+                    this.uploadHost()
 
                     let g = await this.getLink()
                     if (g.err == false) {
