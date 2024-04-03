@@ -16,7 +16,7 @@
         "makesure": "Before using this template, please read the <a href=\"https://github.com/siyuan-note/plugin-sample\">official tutorial</a> to make sure you understand the plug-in. Basic development process."
     },
     "hintTitle":"About",
-    "hintDesc":"1. The current version is a beta version (the function is unstable, and the shared links may be cleaned). Please refer to <a href='https://github.com/tengfei-xy/siyuan-plugin-share-system' >project open source address</a>< br>2. Currently only sharing links from the computer is supported. The reason is that there is a TypeError on the web page: fs.readdirSync is not a function. (In 'fs.readdirSync(directoryPath error), but the author cannot solve it for the time being. It is not an ordinary web page. The problem that the client cannot export.<br>3. WeChat contact information: uBpHJlVdn5k15G3dhLh1" ,
+    "hintDesc":"1. 当前版本为测试版（功能不稳定,被分享的链接有可能会被清理），参考<a href='https://github.com/tengfei-xy/siyuan-plugin-share-system' >项目开源地址</a><br>2. 暂仅支持从电脑端分享链接，原因网页端有个TypeError: fs.readdirSync is not a function. (In 'fs.readdirSync(directoryPath的错误，但作者暂时无法解决，并非是一般的网页端无法导出的问题。<br>3. 缓存目录位置: 思源数据文件夹/tmp/plugin/share-note (注：每次导出前均执行清理一次)<br>4. 微信联系方式: uBpHJlVdn5k15G3dhLh1" ,
     "memu_share_link_title":"Share address",
     "menu_address_title" : "Backend address of the sharing system",
     "menu_address_desc" : "The default is http://124.223.15.220, you are welcome to build it yourself",

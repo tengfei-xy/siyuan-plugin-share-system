@@ -45,12 +45,14 @@ export class SettingUtils {
     }
 
     async load() {
+        
         let data = await this.plugin.loadData(this.file);
         if (data) {
             for (let [key, item] of this.settings) {
                 item.value = data?.[key] ?? item.value;
             }
         }
+        
         this.plugin.data[this.name] = this.dump();
         return data;
     }

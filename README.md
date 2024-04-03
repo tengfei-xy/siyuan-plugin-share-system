@@ -4,7 +4,7 @@
 
 ## Note before use
 
-1. The software is a beta version and is unstable. It is suitable for small scenarios. Everyone is welcome to add issues.
+1. [The current version](https://github.com/tengfei-xy/siyuan-plugin-share-system/releases) of this plug-in is a beta version, unstable, and suitable for small scenes. Welcome to add [issues](https://github.com/tengfei-xy/siyuan-plugin-share-system/issues)
 2. The public network server currently used is provided by the author, and everyone is welcome to build it by themselves (this way, I don’t have to do it myself hahaha)
 3. The link currently has no expiration date, but may be deleted. The linked content will not be deleted when the note is deleted.
 4. WeChat contact information: uBpHJlVdn5k15G3dhLh1
@@ -35,14 +35,9 @@ Export the html file and upload it to the web server. The web server also genera
 
 ## Release Notes
 
-- v0.0.3: The latest version, which solves the problem of compressed resource files on the Windows client.
+- v0.0.3: which solves the problem of compressed resource files on the Windows client.
 
 - v0.0.2: Fixed the problem that the client could not upload due to cache directory error
 
 - v0.0.1: Has basic functions of creating shares and deleting shares
 
-
-
-## Postscript
-
-I’m very curious why there are so few plug-ins like this in the market. Doesn’t everyone share their needs on the public network? Or did I not find it?

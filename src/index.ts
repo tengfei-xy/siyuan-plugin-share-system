@@ -1,28 +1,14 @@
 import {
     Plugin,
     showMessage,
-    // confirm,
     // Dialog,
     Menu,
-    // openTab,
-    // adaptHotkey,
     getFrontend,
-    // getBackend,
-    // IModel,
-    Protyle,
-    // openWindow,
-    // IOperation,
     Constants,
-    // openMobileFileById,
-    // lockScreen,
-    // ICard,
-    // ICardData
 } from "siyuan";
 import "@/index.scss";
 
-const fs = require('fs')
-// import fs from 'fs';
-const path = require('path')
+// const path = require('path')
 import axios from 'axios';
 import JSZIP from 'jszip';
 const axios_plus = axios.create({
@@ -32,14 +18,13 @@ const axios_plus = axios.create({
     },
 });
 import { SettingUtils } from "./libs/setting-utils";
-// import { blob } from "stream/consumers";
 import { pushErrMsg, pushMsg } from "./api";
+import fs from 'node:fs';
+import path from 'path';
 
 const STORAGE_NAME = "menu-config";
 
-
-
-
+const tmp_dir = "temp/plugin/share-note"
 interface Children {
     active: boolean;
     children: Children;
@@ -163,14 +148,14 @@ interface IRes {
 }
 interface IFuncData {
     err: boolean,
-    fdata: string,
+    data: string,
+    fdata?: any
 }
 
 export default class PluginSample extends Plugin {
 
-    // private customTab: () => IModel;
     private isMobile: boolean;
-    private settingUtils: SettingUtils;
+    settingUtils: SettingUtils;
     async onload() {
         this.data[STORAGE_NAME] = { readonlyText: "Readonly" };
 
@@ -220,6 +205,7 @@ export default class PluginSample extends Plugin {
         } catch (error) {
             console.error("Error loading settings storage, probably empty config json:", error);
         }
+
         this.settingUtils.addItem({
             key: "share_link",
             value: "",
@@ -227,8 +213,6 @@ export default class PluginSample extends Plugin {
             title: this.i18n.memu_share_link_title,
             description: "",
         });
-
-
         this.settingUtils.addItem({
             key: "create_share",
             value: "",
@@ -240,10 +224,10 @@ export default class PluginSample extends Plugin {
                 callback: async () => {
                     let g = await this.createLink()
                     if (g.err == false) {
-                        this.settingUtils.set("share_link", g.fdata)
+                        this.settingUtils.set("share_link", g.data)
                         pushMsg("创建成功", 7000)
                     } else {
-                        pushErrMsg(g.fdata, 7000)
+                        pushErrMsg(g.data, 7000)
                     }
                 }
             }
@@ -272,7 +256,6 @@ export default class PluginSample extends Plugin {
             title: this.i18n.menu_address_title,
             description: this.i18n.menu_address_desc,
         });
-
         this.settingUtils.addItem({
             key: "access_code",
             value: "",
@@ -280,7 +263,6 @@ export default class PluginSample extends Plugin {
             title: this.i18n.memu_access_code_title,
             description: this.i18n.memu_access_code_desc,
         });
-
         this.settingUtils.addItem({
             key: "Hint",
             value: "",
@@ -289,47 +271,46 @@ export default class PluginSample extends Plugin {
             description: this.i18n.hintDesc,
         });
 
-        this.protyleSlash = [{
-            filter: ["insert emoji 😊", "插入表情 😊", "crbqwx"],
-            html: `<div class="b3-list-item__first"><span class="b3-list-item__text">${this.i18n.insertEmoji}</span><span class="b3-list-item__meta">😊</span></div>`,
-            id: "insertEmoji",
-            callback(protyle: Protyle) {
-                protyle.insert("😊");
-            }
-        }];
+        // this.protyleSlash = [{
+        //     filter: ["insert emoji 😊", "插入表情 😊", "crbqwx"],
+        //     html: `<div class="b3-list-item__first"><span class="b3-list-item__text">${this.i18n.insertEmoji}</span><span class="b3-list-item__meta">😊</span></div>`,
+        //     id: "insertEmoji",
+        //     callback(protyle: Protyle) {
+        //         protyle.insert("😊");
+        //     }
+        // }];
 
-        this.protyleOptions = {
-            toolbar: ["block-ref",
-                "a",
-                "|",
-                "text",
-                "strong",
-                "em",
-                "u",
-                "s",
-                "mark",
-                "sup",
-                "sub",
-                "clear",
-                "|",
-                "code",
-                "kbd",
-                "tag",
-                "inline-math",
-                "inline-memo",
-                "|",
-                {
-                    name: "insert-smail-emoji",
-                    icon: "iconEmoji",
-                    hotkey: "⇧⌘I",
-                    tipPosition: "n",
-                    tip: this.i18n.insertEmoji,
-                    click(protyle: Protyle) {
-                        protyle.insert("😊");
-                    }
-                }],
-        };
-
+        // this.protyleOptions = {
+        //     toolbar: ["block-ref",
+        //         "a",
+        //         "|",
+        //         "text",
+        //         "strong",
+        //         "em",
+        //         "u",
+        //         "s",
+        //         "mark",
+        //         "sup",
+        //         "sub",
+        //         "clear",
+        //         "|",
+        //         "code",
+        //         "kbd",
+        //         "tag",
+        //         "inline-math",
+        //         "inline-memo",
+        //         "|",
+        //         {
+        //             name: "insert-smail-emoji",
+        //             icon: "iconEmoji",
+        //             hotkey: "⇧⌘I",
+        //             tipPosition: "n",
+        //             tip: this.i18n.insertEmoji,
+        //             click(protyle: Protyle) {
+        //                 protyle.insert("😊");
+        //             }
+        //         }],
+        // };
         console.debug(this.i18n.helloPlugin);
     }
 
@@ -349,7 +330,21 @@ export default class PluginSample extends Plugin {
     uninstall() {
         console.debug("uninstall");
     }
-
+    // openDIYSetting(): void {
+    //     let dialog = new Dialog({
+    //         title: "SettingPannel",
+    //         content: `<div id="SettingPanel" style="height: 100%;"></div>`,
+    //         width: "600px",
+    //         destroyCallback: (options) => {
+    //             console.log("destroyCallback", options);
+    //             //You'd better destroy the component when the dialog is closed
+    //             pannel.$destroy();
+    //         }
+    //     });
+    //     let pannel = new SettingExample({
+    //         target: dialog.element.querySelector("#SettingPanel"),
+    //     });
+    // }
 
     async getsystemInfo() {
         // 获取当前页的ID
@@ -564,7 +559,11 @@ export default class PluginSample extends Plugin {
     // 功能: 导出html
     // 输入: 页面ID
     // 输入: 保存路径
-    async exportHtml(id, savePath) {
+    async exportHtml(id) {
+        let savePath = await this.get_temp_dir()
+
+        await this.rmdir_temp_dir()
+        await this.mkdir_temp_dir()
         let url = "api/export/exportHTML"
         let data = {
             id: id,
@@ -597,7 +596,7 @@ export default class PluginSample extends Plugin {
             .then(function (response) {
                 res_data = response.data
                 if (res_data.code == 0 && res_data.data.id == id) {
-                    console.debug("导出成功")
+                    console.debug("导出资源文件夹成功")
                     return res_data.data.content
                 } else {
                     return ""
@@ -610,7 +609,36 @@ export default class PluginSample extends Plugin {
             });
 
     }
+    // 功能: 使用思源笔记内部API来压缩资源文件
+    // 输出: 取决于API的返回参数
+    async exportResource(){
+        const export_zip_filename = "resources"
 
+        let g: IFuncData = {
+            err: true,
+            data: ""
+        }
+
+        const data = {
+            paths: [tmp_dir],
+            name: export_zip_filename
+        } 
+        const headers ={
+            'Content-Type': 'application/json'
+        }
+        await axios.post("/api/export/exportResources", data, { headers })
+            .then(function (response) {
+                if (response.data.code == 0) {
+                    g.err = false
+                }
+                g.data = response.data.data.path
+                console.debug(`导出资源压缩包成功：${g.data}`)
+            })
+            .catch(function (error) {
+                g.data = error
+            })
+        return g
+    }
     // 用jszip压缩文件夹
     // 输入: 文件夹路径
     // 输入: 保存路径
@@ -634,72 +662,219 @@ export default class PluginSample extends Plugin {
         fs.writeFileSync(savePath, content);
     }
 
+    // 获取绝对路径的缓存地址
+    async get_temp_dir(){
+        let savePath: string
+        let system_info = await this.getsystemInfo()
+
+        // 如果是mac
+        if (system_info.os == "darwin") {
+            savePath = system_info.workspaceDir  + "/" +  tmp_dir
+        } else if (system_info.os == "windows") {
+            savePath = system_info.workspaceDir + "\\" + tmp_dir
+        } else {
+            savePath = system_info.workspaceDir + "/" + tmp_dir
+        }
+
+        return savePath
+    }
+    async mkdir_temp_dir() {
+        let g: IFuncData = {
+            err: true,
+            data: ""
+        }
+
+        const headers = {
+            'Content-Type': 'multipart/form-data',
+        }
+        // 创建文件夹
+        const data = {
+            path: tmp_dir,
+            isDir: "true",
+            // 获取当前时间戳
+            modTime: new Date().getTime(),
+        }
+         await axios.post("/api/file/putFile", data, { headers })
+            .then(function (response) {
+                if (response.data.code == 0) {
+                    g.err = false
+                }
+                g.data = data.path
+            })
+            .catch(function (error) {
+                console.error(`创建缓存目录${error}`)
+                g.data = error
+            })
+        return g
+    }
+    async rmdir_temp_dir() {
+
+        // 创建文件夹
+        const data = {
+            path: tmp_dir,
+        }
+        await axios.post("/api/file/removeFile", data)
+            .then(function () {
+            })
+            .catch(function (error) {
+                console.error(`删除缓存目录${error}`)
+            })
+    }
+    async getFile(path){
+        let g: IFuncData = {
+            err: true,
+            data: ""
+        }
+        const access_code = this.settingUtils.get("access_code") 
+        let headers={}
+        if (access_code != "") {
+            headers = {
+                'Accept': 'application/zip',
+                'Content-Type': 'application/json',
+                'Authorization': 'Token ' + access_code
+            }
+        }else{
+            headers = {
+                'Accept': 'application/zip',
+                'Content-Type': 'application/json',
+            }
+        }
+        headers = {
+            'Accept': 'application/zip',
+            'Content-Type': 'application/json',
+        }
+        // 创建文件夹
+        const data = {
+            path: path,
+        }
+        return await axios.post("/api/file/getFile", data, { headers, responseType: 'blob' })
+            .then(function (response) {
+                g.err = false
+                g.fdata = response.data
+                return g
+            })
+            .catch(function (error) {
+                console.error("获取文件", error)
+                g.data = error
+                return g
+
+            })
+    }
+    async uploadFileBrowserDesktop(serverAddress) {
+        let appid = await this.getSystemID()
+        let docid = await this.getActivePage()
+
+        let g :IFuncData = {
+            err: true,
+            data: ""
+        }
+
+        let content = await this.exportHtml(docid)
+        if (content == "") {
+            return
+        }
+        g = await this.exportResource()
+        if (g.err == true) {
+            return g
+        }
+
+        g = await this.getFile(g.data)
+        if (g.err == true) {
+            return g
+        }
+        if (g.fdata == undefined){
+            g.err = true
+            g.data = "获取文件失败"
+            return g
+        }
+        const formData = new FormData();
+        const blob = new Blob([g.fdata], { type: "application/zip" });
+        formData.append('file', blob);
 
 
+        const headers = {
+            'Content-Type': 'multipart/form-data',
+        }
+        const ft = getFrontend() 
+ 
+        // 发送请求 
+        serverAddress = serverAddress + '/api/upload_file' + `?appid=${appid}&docid=${docid}&type=${ft}`
+
+        return await axios.post(serverAddress, formData, { headers, timeout: 300000 })
+            .then(function (response) {
+                let data: IRes = response.data
+                console.debug("上传文件(桌面浏览器端)",response.data)
+                if (data.err == 0) {
+                    g.err = false
+                    g.data = content
+                    return g
+                } else {
+                    g.data = data.msg
+                    return g
+                }
+            })
+            .catch(function (error) {
+                g.err = false
+                g.data = error
+                console.error(error)
+                return g
+            })
+    }
     // 功能: 上传导出的html文件夹的压缩包到分享服务器
     // 参数: serverAddress 表示服务器地址
     // 参数: dir 表示需要压缩的html文件夹路径
     // 返回参数: IFuncData.err 表示请求是否成功
     // 返回参数: IFuncData.data 表示返回消息
-    async uploadFile(serverAddress) {
-        let savePath: string
+    async uploadFileDesktop(serverAddress) {
+        let savePath = await this.get_temp_dir()
         let appid = await this.getSystemID()
         let docid = await this.getActivePage()
 
-        let system_info = await this.getsystemInfo()
-        // 如果是mac
-        if (system_info.os == "darwin") {
-            savePath = "/tmp/" + docid
-        } else if (system_info.os == "windows") {
-            savePath = system_info.homeDir + "\\AppData\\Local\\Temp\\" + docid
-        } else {
-            savePath = "/tmp/" + docid
-        }
+        
         // 获取用户名
 
-        let content = await this.exportHtml(docid, savePath)
+        let content = await this.exportHtml(docid)
         if (content == "") {
             return
         }
-
-
+        let g: IFuncData = {
+            err: true,
+            data: ""
+        }
         const zip_file = savePath + ".zip"
         await this.compressFolder(savePath, zip_file)
-
-        serverAddress = serverAddress + '/api/upload_file' + `?appid=${appid}&docid=${docid}`
+        const ft = getFrontend()
+        serverAddress = serverAddress + '/api/upload_file' + `?appid=${appid}&docid=${docid}&type=${ft}`
 
         const formData = new FormData();
 
 
         var myBlob = new Blob([fs.readFileSync(zip_file)], { type: "text/zip" });
+        console.debug(`导出资源压缩包成功：${zip_file}`)
+
         formData.append('file', myBlob);
 
-        var headers = {
+        const headers = {
             'Content-Type': 'multipart/form-data',
         }
-        console.debug(`上传文件 文件地址:${zip_file} 后台地址:${serverAddress} `)
         // 发送请求
 
-        let g: IFuncData = {
-            err: true,
-            fdata: ""
-        }
         return axios.post(serverAddress, formData, { headers, timeout: 300000, decompress: false })
             .then(function (response) {
                 let data: IRes = response.data
                 console.debug(response.data)
                 if (data.err == 0) {
                     g.err = false
-                    g.fdata = content
+                    g.data = content
                     return g
                 } else {
-                    g.fdata = data.msg
+                    g.data = data.msg
                     return g
                 }
             })
             .catch(function (error) {
                 g.err = false
-                g.fdata = error
+                g.data = error
                 console.error(error)
                 return g
             })
@@ -721,16 +896,18 @@ export default class PluginSample extends Plugin {
 
         let url = server_address + "/api/upload_args"
         console.debug(`${this.i18n.log_upload_address_desc}:${url} \nappid:${data.appid} \ndocid:${data.docid} \nversion:${data.version} \ntheme:${data.theme} \ntitle:${data.title} `)
-
+        const headers = {
+            'Content-Type': 'text/plain',
+        }
         let g: IFuncData = {
             err: true,
-            fdata: ""
+            data: ""
         }
-        return axios_plus.post(url, data)
+        return axios.post(url, data, { headers })
             .then(function (response) {
                 let data: IRes = response.data
                 g.err = false
-                g.fdata = data.data
+                g.data = data.data
                 console.debug(data)
                 if (data.err == 0) {
                     return g
@@ -741,7 +918,7 @@ export default class PluginSample extends Plugin {
             })
             .catch(function (error) {
                 console.error(error)
-                g.fdata = this.i18n.err_upload
+                g.data = this.i18n.err_upload
                 g.err = true
                 return g
             })
@@ -751,19 +928,36 @@ export default class PluginSample extends Plugin {
     // 返回参数: IFuncData.err 表示请求是否成功
     // 返回参数: IFuncData.data 表示返回链接
     async createLink() {
-
-
-
         let g: IFuncData = {
             err: true,
-            fdata: ""
+            data: ""
         }
         let server_address = this.settingUtils.get("address");
-        g = await this.uploadFile(server_address)
-        if (g.err == true) {
-            return g
+        switch (getFrontend()) {
+            case "browser-desktop":
+                g = await this.uploadFileBrowserDesktop(server_address)
+                if (g.err == true) {
+                    return g
+                }
+                break;
+            case "browser-mobile":
+                g.data = "暂不支持移动端浏览器"
+                break;
+            case "mobile":
+                g.data = "暂不支持移动端"
+                break;
+            case "desktop":
+                g = await this.uploadFileDesktop(server_address)
+                if (g.err == true) {
+                    return g
+                }
+                break;
+            default:
+                g.data = "暂不支持" + getFrontend()
+                break;
         }
-        g = await this.uploadArgs(server_address, g.fdata)
+
+        g = await this.uploadArgs(server_address, g.data)
         return g
     }
 
@@ -779,11 +973,9 @@ export default class PluginSample extends Plugin {
 
         const url = this.settingUtils.get("address") + "/api/getlink"
 
-        var headers = {
-            'Content-Type': 'application/json',
-
+        const headers = {
+            'Content-Type': 'text/plain',
         }
-        console.debug(`${this.i18n.log_upload_address_desc}:${url} \nappid:${data.appid} \ndocid:${data.docid} `)
         return axios.post(url, data, { headers, timeout: 300000 })
             .then(function (response) {
                 let data: IRes = response.data
@@ -791,7 +983,7 @@ export default class PluginSample extends Plugin {
 
                 let g: IFuncData = {
                     err: false,
-                    fdata: data.data
+                    data: data.data
                 }
 
                 if (data.err != 0) {
@@ -803,7 +995,7 @@ export default class PluginSample extends Plugin {
             .catch(function (error) {
                 var g: IFuncData = {
                     err: true,
-                    fdata: ""
+                    data: ""
                 }
                 console.error(error)
                 pushErrMsg(this.i18n.err_upload, 7000)
@@ -820,16 +1012,16 @@ export default class PluginSample extends Plugin {
             docid: await this.getActivePage(),
         };
         const url = this.settingUtils.get("address") + "/api/deletelink"
-
-        console.debug(`${this.i18n.log_upload_address_desc}:${url} \nappid:${data.appid} \ndocid:${data.docid} `)
-        return axios_plus.post(url, data)
+        const headers = {
+            'Content-Type': 'text/plain',
+        }
+        return axios.post(url, data, { headers })
             .then(function (response) {
                 let data: IRes = response.data
-                console.debug(data)
 
                 let g: IFuncData = {
                     err: false,
-                    fdata: data.data
+                    data: data.data
                 }
 
                 if (data.err != 0) {
@@ -841,7 +1033,7 @@ export default class PluginSample extends Plugin {
             .catch(function (error) {
                 var g: IFuncData = {
                     err: true,
-                    fdata: ""
+                    data: ""
                 }
                 console.error(error)
                 pushErrMsg(this.i18n.err_upload, 7000)
@@ -851,22 +1043,22 @@ export default class PluginSample extends Plugin {
 
     // 插件菜单列表
     private async addMenu(rect?: DOMRect) {
-        const menu = new Menu("topBarSample", () => {
-            console.debug(this.i18n.byeMenu);
+        const menu = new Menu("topBar", () => {
+            // console.debug("初始化菜单");
         });
 
         menu.addSeparator();
         menu.addItem({
             icon: "iconSettings",
-            label: "分享设置",
+            label: "设置",
             click: async () => {
-                console.debug("打开设置")
                 this.settingUtils.set("share_link", "")
 
                 try {
+
                     let g = await this.getLink()
                     if (g.err == false) {
-                        this.settingUtils.set("share_link", g.fdata)
+                        this.settingUtils.set("share_link", g.data)
                     }
 
                 } catch (error) {
@@ -874,8 +1066,10 @@ export default class PluginSample extends Plugin {
                 }
 
                 this.openSetting();
-            }
+            },
+
         });
+
         menu.addSeparator();
 
 

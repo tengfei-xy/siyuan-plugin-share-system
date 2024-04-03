@@ -31,13 +31,10 @@
   },
   "funding": {
     "custom": [
-      "https://afdian.net/a/frostime"
+      "https://afdian.net/a/tengfei-xy"
     ]
   },
   "keywords": [
-    "plugin", "open", "share"
-  ],
-  "repos": [
-    "tengfei-xy/siyuan-plugin-share-tool"
+    "plugin", "open", "share", "sharing","note"
   ]
 }
