@@ -27,11 +27,15 @@
     "menu_create_share_desc" : "对于已经分享地址，如果原页面有变化，请重新更新。变化的内容包括文字或主题样式。请勿多次重复点击此按钮。",
     "memu_access_code_title" : "访问授权码",
     "memu_access_code_desc" : "如果有，请填写。适用于在非客户端环境（比如非回环地址的网页端或者开启授权码的环境）调用,请从设置中获取",
-
-    "memu_enable_browser_title": "启用浏览器导出",
-    "memu_enable_browser_desc": "启用后，可以在浏览器中导出",
+    "memu_enable_browser_title": "启用从浏览器访问",
+    "memu_enable_browser_desc": "启用后，可以在浏览器中使用插件",
     "err_upload" : "上传失败,请从控制台查看或联系作者",
     "err_network" : "网络错误",
+    "msg_delete_link_ok" : "删除成功",
+    "msg_delete_link_err" : "删除失败",
+    "msg_get_link_ok" : "获取链接成功",
+    "msg_get_link_err": "获取链接失败",
+    "msg_get_link_noshare" : "本页面未分享",
 
     "log_upload_address_desc":"上传地址"
 }

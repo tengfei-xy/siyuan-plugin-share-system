@@ -10,7 +10,6 @@ import "@/index.scss";
 
 // const path = require('path')
 import axios from 'axios';
-import JSZIP from 'jszip';
 const axios_plus = axios.create({
     timeout: 10000,
     headers: {
@@ -243,6 +242,9 @@ export default class PluginSample extends Plugin {
                     let g = await this.deleteLink()
                     if (g.err == false) {
                         this.settingUtils.set("share_link", "");
+                        pushMsg("删除成功", 7000)
+                    }else{
+                        pushErrMsg(g.data, 7000)
                     }
 
                 }
@@ -261,7 +263,7 @@ export default class PluginSample extends Plugin {
             type: "textinput",
             title: this.i18n.memu_access_code_title,
             description: this.i18n.memu_access_code_desc,
-            
+
         });
         this.settingUtils.addItem({
             key: "enable_browser",
@@ -274,7 +276,7 @@ export default class PluginSample extends Plugin {
                 callback: async () => {
                     const new_value = !this.settingUtils.get("enable_browser")
                     this.settingUtils.set("enable_browser", new_value)
-                    this.uploadHost()
+                    this.settingUtils.save()
                 }
             }
         });
@@ -627,7 +629,7 @@ export default class PluginSample extends Plugin {
     }
     // 功能: 使用思源笔记内部API来压缩资源文件
     // 输出: 取决于API的返回参数
-    async exportResource(){
+    async exportResource() {
         const export_zip_filename = "resources"
 
         let g: IFuncData = {
@@ -638,8 +640,8 @@ export default class PluginSample extends Plugin {
         const data = {
             paths: [tmp_dir],
             name: export_zip_filename
-        } 
-        const headers ={
+        }
+        const headers = {
             'Content-Type': 'application/json'
         }
         await axios.post("/api/export/exportResources", data, { headers })
@@ -651,41 +653,19 @@ export default class PluginSample extends Plugin {
                 console.debug(`导出资源压缩包成功：${g.data}`)
             })
             .catch(function (error) {
-                g.data = error
+                g.data = error.message
             })
         return g
     }
-    // 用jszip压缩文件夹
-    // 输入: 文件夹路径
-    // 输入: 保存路径
-    async compressFolder(folderPath, savePath) {
-        let zip = new JSZIP();
-        let addFolderToZip = async (dir, zipFolder) => {
-            const entries = fs.readdirSync(dir, { withFileTypes: true });
-            for (let i = 0; i < entries.length; i++) {
-                const entry = entries[i];
-                const fullPath = path.join(dir, entry.name);
-                if (entry.isFile()) {
-                    zipFolder.file(entry.name, fs.readFileSync(fullPath));
-                } else if (entry.isDirectory()) {
-                    let folder = zipFolder.folder(entry.name);
-                    await addFolderToZip(fullPath, folder);
-                }
-            }
-        };
-        await addFolderToZip(folderPath, zip);
-        let content = await zip.generateAsync({ type: "uint8array" });
-        fs.writeFileSync(savePath, content);
-    }
 
     // 获取绝对路径的缓存地址
-    async get_temp_dir(){
+    async get_temp_dir() {
         let savePath: string
         let system_info = await this.getsystemInfo()
 
         // 如果是mac
         if (system_info.os == "darwin") {
-            savePath = system_info.workspaceDir  + "/" +  tmp_dir
+            savePath = system_info.workspaceDir + "/" + tmp_dir
         } else if (system_info.os == "windows") {
             savePath = system_info.workspaceDir + "\\" + tmp_dir
         } else {
@@ -710,7 +690,7 @@ export default class PluginSample extends Plugin {
             // 获取当前时间戳
             modTime: new Date().getTime(),
         }
-         await axios.post("/api/file/putFile", data, { headers })
+        await axios.post("/api/file/putFile", data, { headers })
             .then(function (response) {
                 if (response.data.code == 0) {
                     g.err = false
@@ -719,7 +699,7 @@ export default class PluginSample extends Plugin {
             })
             .catch(function (error) {
                 console.error(`创建缓存目录${error}`)
-                g.data = error
+                g.data = error.message
             })
         return g
     }
@@ -736,20 +716,20 @@ export default class PluginSample extends Plugin {
                 console.error(`删除缓存目录${error}`)
             })
     }
-    async getFile(path){
+    async getFile(path) {
         let g: IFuncData = {
             err: true,
             data: ""
         }
-        const access_code = this.settingUtils.get("access_code") 
-        let headers={}
+        const access_code = this.settingUtils.get("access_code")
+        let headers = {}
         if (access_code != "") {
             headers = {
                 'Accept': 'application/zip',
                 'Content-Type': 'application/json',
                 'Authorization': 'Token ' + access_code
             }
-        }else{
+        } else {
             headers = {
                 'Accept': 'application/zip',
                 'Content-Type': 'application/json',
@@ -771,46 +751,16 @@ export default class PluginSample extends Plugin {
             })
             .catch(function (error) {
                 console.error("获取文件", error)
-                g.data = error
+                g.data = error.message
                 return g
 
             })
     }
-    async uploadHost() {
-        let g :IFuncData = {
-            err: true,
-            data: ""
-        }
-        const data = {
-            appid: await this.getSystemID(),
-            host: window.location.protocol + "//" + window.location.host,
-            status: this.settingUtils.get("enable_browser")
-        }
-        const headers = {
-            'Content-Type': 'text/plain',
-        }
-        const server_address = this.settingUtils.get("address")
-        const url = server_address + "/api/upload_host"
-        return axios.post(url, data,{ headers })
-            .then(function (response) {
-                if (response.data.err == 0) {
-                    g.err = false
-                }else{
-                    g.data = response.data.msg
-                }
-                return g
-            })
-            .catch(function (error) {
-                console.error(error)
-                g.data = error
-                return g
-            })
-    }
-    async uploadFileBrowserDesktop(serverAddress) {
+    async uploadFile(serverAddress) {
         let appid = await this.getSystemID()
         let docid = await this.getActivePage()
 
-        let g :IFuncData = {
+        let g: IFuncData = {
             err: true,
             data: ""
         }
@@ -828,7 +778,7 @@ export default class PluginSample extends Plugin {
         if (g.err == true) {
             return g
         }
-        if (g.fdata == undefined){
+        if (g.fdata == undefined) {
             g.err = true
             g.data = "获取文件失败"
             return g
@@ -837,19 +787,28 @@ export default class PluginSample extends Plugin {
         const blob = new Blob([g.fdata], { type: "application/zip" });
         formData.append('file', blob);
 
+        const enable_browser = this.settingUtils.get("enable_browser")
 
-        const headers = {
-            'Content-Type': 'multipart/form-data',
+        let headers = {}
+        if (enable_browser) {
+            headers = {
+                'Content-Type': 'multipart/form-data',
+                "cros-status": enable_browser,
+            }
+        } else {
+            headers = {
+                'Content-Type': 'multipart/form-data',
+            }
         }
-        const ft = getFrontend() 
- 
-        // 发送请求 
+        const ft = getFrontend()
+
+        // 发送请求  
         serverAddress = serverAddress + '/api/upload_file' + `?appid=${appid}&docid=${docid}&type=${ft}`
 
         return await axios.post(serverAddress, formData, { headers, timeout: 300000 })
             .then(function (response) {
                 let data: IRes = response.data
-                console.debug("上传文件(桌面浏览器端)",response.data)
+                console.debug("上传文件", response.data)
                 if (data.err == 0) {
                     g.err = false
                     g.data = content
@@ -860,71 +819,13 @@ export default class PluginSample extends Plugin {
                 }
             })
             .catch(function (error) {
-                g.err = false
-                g.data = error
+                g.err = true
+                g.data = error.message
                 console.error(error)
                 return g
             })
     }
-    // 功能: 上传导出的html文件夹的压缩包到分享服务器
-    // 参数: serverAddress 表示服务器地址
-    // 参数: dir 表示需要压缩的html文件夹路径
-    // 返回参数: IFuncData.err 表示请求是否成功
-    // 返回参数: IFuncData.data 表示返回消息
-    async uploadFileDesktop(serverAddress) {
-        let savePath = await this.get_temp_dir()
-        let appid = await this.getSystemID()
-        let docid = await this.getActivePage()
 
-        
-        // 获取用户名
-
-        let content = await this.exportHtml(docid)
-        if (content == "") {
-            return
-        }
-        let g: IFuncData = {
-            err: true,
-            data: ""
-        }
-        const zip_file = savePath + ".zip"
-        await this.compressFolder(savePath, zip_file)
-        const ft = getFrontend()
-        serverAddress = serverAddress + '/api/upload_file' + `?appid=${appid}&docid=${docid}&type=${ft}`
-
-        const formData = new FormData();
-
-
-        var myBlob = new Blob([fs.readFileSync(zip_file)], { type: "text/zip" });
-        console.debug(`导出资源压缩包成功：${zip_file}`)
-
-        formData.append('file', myBlob);
-
-        const headers = {
-            'Content-Type': 'multipart/form-data',
-        }
-        // 发送请求
-
-        return axios.post(serverAddress, formData, { headers, timeout: 300000, decompress: false })
-            .then(function (response) {
-                let data: IRes = response.data
-                console.debug(response.data)
-                if (data.err == 0) {
-                    g.err = false
-                    g.data = content
-                    return g
-                } else {
-                    g.data = data.msg
-                    return g
-                }
-            })
-            .catch(function (error) {
-                g.err = false
-                g.data = error
-                console.error(error)
-                return g
-            })
-    }
 
     // 功能: 上传分享文档的参数到分享服务器
     // 返回参数: IFuncData.err 表示请求是否成功
@@ -941,10 +842,20 @@ export default class PluginSample extends Plugin {
         };
 
         let url = server_address + "/api/upload_args"
-        console.debug(`${this.i18n.log_upload_address_desc}:${url} \nappid:${data.appid} \ndocid:${data.docid} \nversion:${data.version} \ntheme:${data.theme} \ntitle:${data.title} `)
-        const headers = {
-            'Content-Type': 'text/plain',
+        const enable_browser = this.settingUtils.get("enable_browser")
+
+        let headers = {}
+        if (enable_browser) {
+            headers = {
+                'Content-Type': 'application/json',
+                "cros-status": enable_browser,
+            }
+        } else {
+            headers = {
+                'Content-Type': 'text/plain',
+            }
         }
+
         let g: IFuncData = {
             err: true,
             data: ""
@@ -954,7 +865,7 @@ export default class PluginSample extends Plugin {
                 let data: IRes = response.data
                 g.err = false
                 g.data = data.data
-                console.debug(data)
+                console.debug("上传参数",data)
                 if (data.err == 0) {
                     return g
                 } else {
@@ -964,7 +875,7 @@ export default class PluginSample extends Plugin {
             })
             .catch(function (error) {
                 console.error(error)
-                g.data = this.i18n.err_upload
+                g.data = error.message
                 g.err = true
                 return g
             })
@@ -979,32 +890,12 @@ export default class PluginSample extends Plugin {
             data: ""
         }
         let server_address = this.settingUtils.get("address");
-        switch (getFrontend()) {
-            case "browser-desktop":
-                g = await this.uploadFileBrowserDesktop(server_address)
-                if (g.err == true) {
-                    return g
-                }
-                break;
-            case "browser-mobile":
-                g.data = "暂不支持移动端浏览器"
-                break;
-            case "mobile":
-                g.data = "暂不支持移动端"
-                break;
-            case "desktop":
-                g = await this.uploadFileDesktop(server_address)
-                if (g.err == true) {
-                    return g
-                }
-                break;
-            default:
-                g.data = "暂不支持" + getFrontend()
-                break;
+        g = await this.uploadFile(server_address)
+        if (g.err == true) {
+            pushErrMsg(g.data, 7000)
+            return g
         }
-
-        g = await this.uploadArgs(server_address, g.data)
-        return g
+        return await this.uploadArgs(server_address, g.data)
     }
 
     // 功能: 获取分享链接
@@ -1012,39 +903,47 @@ export default class PluginSample extends Plugin {
     // 返回参数: err 表示请求是否成功
     // 返回参数: data 表示返回链接
     async getLink() {
+        let g: IFuncData = {
+            err: true,
+            data: ""
+        }
+
         const data: IGetLinkReq = {
             appid: await this.getSystemID(),
             docid: await this.getActivePage(),
         };
 
         const url = this.settingUtils.get("address") + "/api/getlink"
-
-        const headers = {
-            'Content-Type': 'text/plain',
+        const enable_browser = this.settingUtils.get("enable_browser")
+        console.debug(`enable_browser ${enable_browser}`)
+        let headers = {}
+        if (enable_browser) {
+            headers = {
+                'Content-Type': 'application/json',
+                "cros-status": enable_browser,
+            }
+        } else {
+            headers = {
+                'Content-Type': 'text/plain',
+            }
         }
         return axios.post(url, data, { headers, timeout: 300000 })
             .then(function (response) {
                 let data: IRes = response.data
-                console.debug(data)
-
-                let g: IFuncData = {
-                    err: false,
-                    data: data.data
-                }
-
-                if (data.err != 0) {
+                console.debug("获取链接",data)
+                if (data.err == 0 || data.err ==3){
+                    g.err = false
+                }else{
                     g.err = true
                 }
+                g.data = data.data
+
                 return g
 
             })
             .catch(function (error) {
-                var g: IFuncData = {
-                    err: true,
-                    data: ""
-                }
                 console.error(error)
-                pushErrMsg(this.i18n.err_upload, 7000)
+                g.data = error.message
                 return g
             })
     }
@@ -1053,36 +952,46 @@ export default class PluginSample extends Plugin {
     // 返回: IFuncData结构体，包含err和data，
     // 返回参数: err 表示请求是否成功
     async deleteLink() {
+        let g: IFuncData = {
+            err: true,
+            data: "",
+        }
+
+
         const data: IGetLinkReq = {
             appid: await this.getSystemID(),
             docid: await this.getActivePage(),
         };
         const url = this.settingUtils.get("address") + "/api/deletelink"
-        const headers = {
-            'Content-Type': 'text/plain',
+        const enable_browser = this.settingUtils.get("enable_browser")
+
+        let headers = {}
+        if (enable_browser) {
+            headers = {
+                'Content-Type': 'application/json',
+                "cros-status": enable_browser,
+            }
+        } else {
+            headers = {
+                'Content-Type': 'text/plain',
+            }
         }
         return axios.post(url, data, { headers })
             .then(function (response) {
                 let data: IRes = response.data
-
-                let g: IFuncData = {
-                    err: false,
-                    data: data.data
-                }
-
-                if (data.err != 0) {
+                console.debug("删除链接",data)
+                if (data.err == 0 || data.err == 3) {
+                    g.err = false
+                } else {
                     g.err = true
                 }
+                g.data = data.data
                 return g
 
             })
             .catch(function (error) {
-                var g: IFuncData = {
-                    err: true,
-                    data: ""
-                }
                 console.error(error)
-                pushErrMsg(this.i18n.err_upload, 7000)
+                g.data = error.message
                 return g
             })
     }
@@ -1101,15 +1010,16 @@ export default class PluginSample extends Plugin {
                 this.settingUtils.set("share_link", "")
 
                 try {
-                    this.uploadHost()
-
+                    // this.uploadHost()
                     let g = await this.getLink()
                     if (g.err == false) {
                         this.settingUtils.set("share_link", g.data)
+                    }else{
+                        pushErrMsg(g.data, 7000)
                     }
 
                 } catch (error) {
-                    pushErrMsg(this.i18n.err_network, 7000)
+                    pushErrMsg(error.message, 7000)
                 }
 
                 this.openSetting();

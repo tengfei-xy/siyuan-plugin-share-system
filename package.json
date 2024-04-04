@@ -31,7 +31,6 @@
     "vite-plugin-zip-pack": "^1.0.5"
   },
   "dependencies": {
-    "axios": "^1.6.8",
-    "jszip": "^3.10.1"
+    "axios": "^1.6.8"
   }
 }
