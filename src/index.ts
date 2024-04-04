@@ -288,46 +288,6 @@ export default class PluginSample extends Plugin {
             description: this.i18n.hintDesc,
         });
 
-        // this.protyleSlash = [{
-        //     filter: ["insert emoji 😊", "插入表情 😊", "crbqwx"],
-        //     html: `<div class="b3-list-item__first"><span class="b3-list-item__text">${this.i18n.insertEmoji}</span><span class="b3-list-item__meta">😊</span></div>`,
-        //     id: "insertEmoji",
-        //     callback(protyle: Protyle) {
-        //         protyle.insert("😊");
-        //     }
-        // }];
-
-        // this.protyleOptions = {
-        //     toolbar: ["block-ref",
-        //         "a",
-        //         "|",
-        //         "text",
-        //         "strong",
-        //         "em",
-        //         "u",
-        //         "s",
-        //         "mark",
-        //         "sup",
-        //         "sub",
-        //         "clear",
-        //         "|",
-        //         "code",
-        //         "kbd",
-        //         "tag",
-        //         "inline-math",
-        //         "inline-memo",
-        //         "|",
-        //         {
-        //             name: "insert-smail-emoji",
-        //             icon: "iconEmoji",
-        //             hotkey: "⇧⌘I",
-        //             tipPosition: "n",
-        //             tip: this.i18n.insertEmoji,
-        //             click(protyle: Protyle) {
-        //                 protyle.insert("😊");
-        //             }
-        //         }],
-        // };
         console.debug(this.i18n.helloPlugin);
 
     }
@@ -399,15 +359,9 @@ export default class PluginSample extends Plugin {
         // 设置handle
         let headers = {}
         const access_code = this.settingUtils.get("access_code")
-        if (access_code == "") {
-            headers = {
-                'Content-Type': 'application/json'
-            };
-        } else {
-            headers = {
-                'Authorization': ' Token ' + access_code,
-                'Content-Type': 'application/json'
-            };
+        headers['Content-Type'] = 'application/json'
+        if (access_code != "") {
+            headers['Authorization'] = ' Token ' + access_code
         }
 
         return axios.post(url, data, headers)
@@ -455,16 +409,11 @@ export default class PluginSample extends Plugin {
         // 设置headers
         let headers = {}
         const access_code = this.settingUtils.get("access_code")
-        if (access_code == "") {
-            headers = {
-                'Content-Type': 'application/json'
-            };
-        } else {
-            headers = {
-                'Authorization': ' Token ' + access_code,
-                'Content-Type': 'application/json'
-            };
+        headers['Content-Type'] = 'application/json'
+        if (access_code != "") {
+            headers['Authorization'] = ' Token ' + access_code
         }
+        
 
         return axios_plus.post(url, data, headers)
             .then(function (response) {
@@ -492,15 +441,9 @@ export default class PluginSample extends Plugin {
         // 设置headers
         let headers = {}
         const access_code = this.settingUtils.get("access_code")
-        if (access_code == "") {
-            headers = {
-                'Content-Type': 'application/json'
-            };
-        } else {
-            headers = {
-                'Authorization': ' Token ' + access_code,
-                'Content-Type': 'application/json'
-            };
+        headers['Content-Type'] = 'application/json'
+        if (access_code != "") {
+            headers['Authorization'] = ' Token ' + access_code
         }
 
         return axios_plus.post(url, data, headers)
@@ -546,15 +489,9 @@ export default class PluginSample extends Plugin {
         // 设置headers
         let headers = {}
         const access_code = this.settingUtils.get("access_code")
-        if (access_code == "") {
-            headers = {
-                'Content-Type': 'application/json'
-            };
-        } else {
-            headers = {
-                'Authorization': ' Token ' + access_code,
-                'Content-Type': 'application/json'
-            };
+        headers['Content-Type'] = 'application/json'
+        if (access_code != "") {
+            headers['Authorization'] = ' Token ' + access_code
         }
 
         return axios_plus.post(url, data, headers)
@@ -842,18 +779,15 @@ export default class PluginSample extends Plugin {
         };
 
         let url = server_address + "/api/upload_args"
-        const enable_browser = this.settingUtils.get("enable_browser")
 
         let headers = {}
+
+        const enable_browser = this.settingUtils.get("enable_browser")
         if (enable_browser) {
-            headers = {
-                'Content-Type': 'application/json',
-                "cros-status": enable_browser,
-            }
+            headers['Content-Type'] = 'application/json'
+            headers['cros-status'] = enable_browser
         } else {
-            headers = {
-                'Content-Type': 'text/plain',
-            }
+            headers['Content-Type'] = 'text/plain'
         }
 
         let g: IFuncData = {
@@ -914,18 +848,14 @@ export default class PluginSample extends Plugin {
         };
 
         const url = this.settingUtils.get("address") + "/api/getlink"
-        const enable_browser = this.settingUtils.get("enable_browser")
-        console.debug(`enable_browser ${enable_browser}`)
+
         let headers = {}
+        const enable_browser = this.settingUtils.get("enable_browser")
         if (enable_browser) {
-            headers = {
-                'Content-Type': 'application/json',
-                "cros-status": enable_browser,
-            }
+            headers['Content-Type'] = 'application/json'
+            headers['cros-status'] = enable_browser
         } else {
-            headers = {
-                'Content-Type': 'text/plain',
-            }
+            headers['Content-Type'] = 'text/plain'
         }
         return axios.post(url, data, { headers, timeout: 300000 })
             .then(function (response) {
@@ -963,19 +893,16 @@ export default class PluginSample extends Plugin {
             docid: await this.getActivePage(),
         };
         const url = this.settingUtils.get("address") + "/api/deletelink"
-        const enable_browser = this.settingUtils.get("enable_browser")
 
         let headers = {}
+        const enable_browser = this.settingUtils.get("enable_browser")
         if (enable_browser) {
-            headers = {
-                'Content-Type': 'application/json',
-                "cros-status": enable_browser,
-            }
+            headers['Content-Type'] = 'application/json'
+            headers['cros-status'] = enable_browser
         } else {
-            headers = {
-                'Content-Type': 'text/plain',
-            }
+            headers['Content-Type'] = 'text/plain'
         }
+
         return axios.post(url, data, { headers })
             .then(function (response) {
                 let data: IRes = response.data
