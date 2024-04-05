@@ -19,10 +19,6 @@ Supports exporting from desktop and desktop browsers
 
 Create button, suitable for first creation and subsequent update pages. An updated page indicates a change in content or theme.
 
-**Cross domain instructions**
-
-Other web pages will be gradually supported after the web page problems are fixed.
-
 **Log description**
 
 When debugging, please adjust the log level to "all levels" in the console.
@@ -34,6 +30,8 @@ Export the html file and upload it to the web server. The web server also genera
 
 
 ## Release Notes
+
+- v0.0.5: updated text description
 
 - v0.0.4: Support export from browser, log and message prompt optimization
 
