@@ -8,7 +8,6 @@ import {
 } from "siyuan";
 import "@/index.scss";
 
-// const path = require('path')
 import axios from 'axios';
 const axios_plus = axios.create({
     timeout: 10000,
@@ -18,8 +17,6 @@ const axios_plus = axios.create({
 });
 import { SettingUtils } from "./libs/setting-utils";
 import { pushErrMsg, pushMsg } from "./api";
-import fs from 'node:fs';
-import path from 'path';
 
 const STORAGE_NAME = "menu-config";
 
