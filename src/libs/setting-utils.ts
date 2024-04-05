@@ -80,7 +80,26 @@ export class SettingUtils {
             this.updateElementFromValue(key);
         }
     }
-
+    /**
+     * Disable setting item
+     * @param key key name
+     */
+    disable(key: string){
+        let element = this.elements.get(key) as any;
+        if (element) {
+            element.disabled = true;
+        }
+    }
+    /**
+     * Enable setting item
+     * @param key key name
+     */
+    enable(key: string){
+        let element = this.elements.get(key) as any;
+        if (element) {
+            element.disabled = false;
+        }
+    }
     /**
      * 遍历设置，将设置项目导出为 JSON 对象
      * @returns object

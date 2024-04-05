@@ -220,13 +220,18 @@ export default class PluginSample extends Plugin {
             button: {
                 label: this.i18n.menu_create_share_label,
                 callback: async () => {
+                    this.settingUtils.disable("create_share")
+
                     let g = await this.createLink()
                     if (g.err == false) {
                         this.settingUtils.set("share_link", g.data)
+                        this.settingUtils.enable("delete_share",)
                         pushMsg("创建成功", 7000)
                     } else {
                         pushErrMsg(g.data, 7000)
                     }
+                    this.settingUtils.enable("create_share")
+
                 }
             }
         });
@@ -243,6 +248,8 @@ export default class PluginSample extends Plugin {
                     if (g.err == false) {
                         this.settingUtils.set("share_link", "");
                         pushMsg("删除成功", 7000)
+                        this.settingUtils.disable("delete_share")
+
                     }else{
                         pushErrMsg(g.data, 7000)
                     }
@@ -857,10 +864,12 @@ export default class PluginSample extends Plugin {
         } else {
             headers['Content-Type'] = 'text/plain'
         }
+
         return axios.post(url, data, { headers, timeout: 300000 })
             .then(function (response) {
                 let data: IRes = response.data
                 console.debug("获取链接",data)
+
                 if (data.err == 0 || data.err ==3){
                     g.err = false
                 }else{
@@ -934,13 +943,17 @@ export default class PluginSample extends Plugin {
             icon: "iconSettings",
             label: "设置",
             click: async () => {
+                this.settingUtils.disable("delete_share")
                 this.settingUtils.set("share_link", "")
 
                 try {
-                    // this.uploadHost()
                     let g = await this.getLink()
                     if (g.err == false) {
                         this.settingUtils.set("share_link", g.data)
+                        if (g.data != ""){
+                            this.settingUtils.enable("delete_share")
+                        }
+
                     }else{
                         pushErrMsg(g.data, 7000)
                     }
@@ -949,11 +962,11 @@ export default class PluginSample extends Plugin {
                     pushErrMsg(error.message, 7000)
                 }
 
+
                 this.openSetting();
             },
 
         });
-
         menu.addSeparator();
 
 
