@@ -31,7 +31,7 @@ Export the html file and upload it to the web server. The web server also genera
 
 ## Release Notes
 
-- v0.0.5: updated text description
+- v0.0.5: Update text description, update button is available or unavailable at different times
 
 - v0.0.4: Support export from browser, log and message prompt optimization
 
