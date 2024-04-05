@@ -234,8 +234,8 @@ export default class PluginSample extends Plugin {
             key: "delete_share",
             value: "",
             type: "button",
-            title: this.i18n.menu_delete_share_title,
-            description: "",
+            title: this.i18n.menu_delete_share_desc,
+            description: this.i18n.menu_delete_share_label,
             button: {
                 label: this.i18n.menu_delete_share_label,
                 callback: async () => {
