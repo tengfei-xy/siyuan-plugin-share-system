@@ -30,13 +30,13 @@
     "memu_access_code_desc" : "If yes, please fill it in. It is suitable for calling in a non-client environment (such as a web page with a non-loopback address or an environment with authorization code enabled). Please get it from the settings",
     "memu_enable_browser_title": "Enable browser access",
     "memu_enable_browser_desc": "After enabling, you can use the plugin in the browser",
+    "memu_hide_version_title": "Hide version number",
+    "memu_hide_version_desc": "The version number of Siyuan Notes that hides the exported page title",
     "err_upload" : "Upload failed, please check from the console or contact the author",
     "err_network" : "Network error, please check the network",
-
     "msg_get_link_ok": "Get link successfully",
     "msg_get_link_err": "Failed to get link",
     "msg_get_link_noshare": "This page is not shared",
-
     "msg_delete_link_ok": "Delete success",
     "msg_delete_link_err": "Delete failed",
     "log_upload_address_desc":"Upload address"

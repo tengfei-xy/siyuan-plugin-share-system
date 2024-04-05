@@ -1,6 +1,6 @@
 # Siyuan Notes’ sharing note-taking tool
 
-[English](./README.md)
+[中文](./README_zh_CN.md)
 
 ## Note before use
 
@@ -30,6 +30,8 @@ Export the html file and upload it to the web server. The web server also genera
 
 
 ## Release Notes
+
+- v0.0.6: Support hiding the version number of the export page
 
 - v0.0.5: Update text description, update button is available or unavailable at different times
 

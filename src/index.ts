@@ -60,7 +60,8 @@ interface IUploadArgsReq {
     content: string;
     version: string;
     theme: string;
-    title: string
+    title: string;
+    hide_version : boolean;
 }
 interface IGetLinkReq {
     appid: string;
@@ -278,11 +279,24 @@ export default class PluginSample extends Plugin {
             type: "checkbox",
             title: this.i18n.memu_enable_browser_title,
             description: this.i18n.memu_enable_browser_desc,
-            button: {
-                label: this.i18n.memu_enable_browser_label,
+            checkbox: {
                 callback: async () => {
                     const new_value = !this.settingUtils.get("enable_browser")
                     this.settingUtils.set("enable_browser", new_value)
+                    this.settingUtils.save()
+                }
+            }
+        });
+        this.settingUtils.addItem({
+            key: "hide_version",
+            value: true,
+            type: "checkbox",
+            title: this.i18n.memu_hide_version_title,
+            description: this.i18n.memu_hide_version_desc,
+            checkbox: {
+                callback: async () => {
+                    const new_value = !this.settingUtils.get("hide_version")
+                    this.settingUtils.set("hide_version", new_value)
                     this.settingUtils.save()
                 }
             }
@@ -775,14 +789,15 @@ export default class PluginSample extends Plugin {
     // 返回参数: IFuncData.err 表示请求是否成功
     // 返回参数: IFuncData.data 表示返回链接
     async uploadArgs(server_address: string, content: string) {
-        let docid = await this.getActivePage()
+        let docid = await this.getActivePage() 
         let data: IUploadArgsReq = {
             appid: await this.getSystemID(),
             docid: docid,
             content: content,
             version: Constants.SIYUAN_VERSION,
             theme: await this.getTheme(),
-            title: await this.getDocTitle(docid)
+            title: await this.getDocTitle(docid),
+            hide_version: this.settingUtils.get("hide_version")
         };
 
         let url = server_address + "/api/upload_args"
