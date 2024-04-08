@@ -2,7 +2,7 @@
   "name": "siyuan-plugin-share-tool",
   "author": "tengfei-xy",
   "url": "https://github.com/tengfei-xy/siyuan-plugin-share-system",
-  "version": "0.0.8",
+  "version": "0.0.9",
   "minAppVersion": "3.0.0",
   "backends": [
     "windows",
