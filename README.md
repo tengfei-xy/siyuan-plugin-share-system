@@ -31,6 +31,8 @@ Export the html file and upload it to the web server. The web server also genera
 
 ## Release Notes
 
+- v0.0.8: No update (reupload)
+
 - v0.0.7: Modify the open setting to get the connection timeout to 3 seconds
 
 - v0.0.6: Support hiding the version number of the export page
