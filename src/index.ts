@@ -5,6 +5,7 @@ import {
     Menu,
     getFrontend,
     Constants,
+    Dialog,
 } from "siyuan";
 import "@/index.scss";
 
@@ -17,6 +18,7 @@ const axios_plus = axios.create({
 });
 import { SettingUtils } from "./libs/setting-utils";
 import { pushErrMsg, pushMsg } from "./api";
+import DialogPanel from "./libs/dialog.svelte";
 
 const STORAGE_NAME = "menu-config";
 
@@ -261,6 +263,12 @@ export default class PluginSample extends Plugin {
             type: "textinput",
             title: this.i18n.menu_address_title,
             description: this.i18n.menu_address_desc,
+            action: {
+                callback() {
+                    let value = this.settingUtils.takeAndSave("address");
+                    console.debug("address", value);
+                },
+            }
         });
         this.settingUtils.addItem({
             key: "access_code",
@@ -276,7 +284,7 @@ export default class PluginSample extends Plugin {
             type: "checkbox",
             title: this.i18n.memu_enable_browser_title,
             description: this.i18n.memu_enable_browser_desc,
-            checkbox: {
+            action: {
                 callback: async () => {
                     const new_value = !this.settingUtils.get("enable_browser")
                     this.settingUtils.set("enable_browser", new_value)
@@ -290,14 +298,13 @@ export default class PluginSample extends Plugin {
             type: "checkbox",
             title: this.i18n.memu_hide_version_title,
             description: this.i18n.memu_hide_version_desc,
-            checkbox: {
+            action: {
                 callback: async () => {
-                    const new_value = !this.settingUtils.get("hide_version")
-                    this.settingUtils.set("hide_version", new_value)
-                    this.settingUtils.save()
+                    const new_value = this.settingUtils.takeAndSave("hide_version")
+                    console.debug("hide_version", new_value)
                 }
             }
-        });
+        }); 
         this.settingUtils.addItem({
             key: "Hint",
             value: "",
@@ -326,21 +333,6 @@ export default class PluginSample extends Plugin {
     uninstall() {
         console.debug("uninstall");
     }
-    // openDIYSetting(): void {
-    //     let dialog = new Dialog({
-    //         title: "SettingPannel",
-    //         content: `<div id="SettingPanel" style="height: 100%;"></div>`,
-    //         width: "600px",
-    //         destroyCallback: (options) => {
-    //             console.log("destroyCallback", options);
-    //             //You'd better destroy the component when the dialog is closed
-    //             pannel.$destroy();
-    //         }
-    //     });
-    //     let pannel = new SettingExample({
-    //         target: dialog.element.querySelector("#SettingPanel"),
-    //     });
-    // }
 
     async getsystemInfo() {
         // 获取当前页的ID
@@ -951,6 +943,26 @@ export default class PluginSample extends Plugin {
         });
 
         menu.addSeparator();
+        menu.addItem({
+            icon: "iconfaces",
+            label: this.i18n.menu_item_share_label,
+            click: () => {
+                let dialog = new Dialog({
+                    title: this.i18n.dialog_title,
+                    content: `<div id="DialogPanel" style="height: 100%;"></div>`,
+                    width: "600px",
+                    destroyCallback: (options) => {
+                        console.log("destroyCallback", options);
+                        //You'd better destroy the component when the dialog is closed
+                        pannel.$destroy();
+                    }
+                });
+                let pannel = new DialogPanel({
+                    target: dialog.element.querySelector("#DialogPanel"),
+                });
+            }
+        });
+
         menu.addItem({
             icon: "iconSettings",
             label: "设置",

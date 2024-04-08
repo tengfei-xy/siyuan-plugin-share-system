@@ -14,8 +14,9 @@ export class SettingUtils {
     name: string;
     file: string;
 
-    settings: Map<string, ISettingItem> = new Map(); 
+    settings: Map<string, ISettingItem> = new Map();
     elements: Map<string, HTMLElement> = new Map();
+
     constructor(plugin: Plugin, name?: string, callback?: (data: any) => void, width?: string, height?: string) {
         this.name = name ?? 'settings';
         this.plugin = plugin;
@@ -45,27 +46,26 @@ export class SettingUtils {
     }
 
     async load() {
-        
         let data = await this.plugin.loadData(this.file);
+        console.debug('Load config:', data);
         if (data) {
             for (let [key, item] of this.settings) {
                 item.value = data?.[key] ?? item.value;
             }
         }
-        
         this.plugin.data[this.name] = this.dump();
         return data;
     }
 
-    // 导出数据为json格式
     async save() {
         let data = this.dump();
         await this.plugin.saveData(this.file, this.dump());
+        console.debug('Save config:', data);
         return data;
     }
 
     /**
-     * Get setting item value
+     * read the data after saving
      * @param key key name
      * @returns setting item value
      */
@@ -73,6 +73,27 @@ export class SettingUtils {
         return this.settings.get(key)?.value;
     }
 
+    /**
+      * Read in real time, 
+      * do not read from the configuration file
+      * @param key key name
+      * @returns value in html 
+      */
+    take(key: string) {
+        let item = this.getElement(key)
+        this.settings.set(key, item)
+        if (item.type === 'button') {
+            return item.value
+        }
+        return item.value
+    }
+
+    /**
+     * Set data to this.settings, 
+     * but do not save it to the configuration file
+     * @param key key name
+     * @param value value
+     */
     set(key: string, value: any) {
         let item = this.settings.get(key);
         if (item) {
@@ -80,32 +101,64 @@ export class SettingUtils {
             this.updateElementFromValue(key);
         }
     }
+
+    /**
+     * Set and save setting item value
+     * If you want to set and save immediately you can use this method
+     * @param key key name
+     * @param value value
+     */
+    async setAndSave(key: string, value: any) {
+        let item = this.settings.get(key);
+        if (item) {
+            item.value = value;
+            this.updateElementFromValue(key);
+            await this.save()
+        }
+    }
+
+    /**
+     * Read data from html and save it
+     * @param key key name
+     * @param value value
+     * @return value in html 
+     */
+    async takeAndSave(key: string) {
+        let value = this.take(key)
+        await this.save()
+        return value
+    }
+
     /**
      * Disable setting item
      * @param key key name
      */
-    disable(key: string){
+    disable(key: string) {
         let element = this.elements.get(key) as any;
         if (element) {
             element.disabled = true;
         }
     }
+
     /**
      * Enable setting item
      * @param key key name
      */
-    enable(key: string){
+    enable(key: string) {
         let element = this.elements.get(key) as any;
         if (element) {
             element.disabled = false;
         }
     }
+
     /**
-     * 遍历设置，将设置项目导出为 JSON 对象
+     * 将设置项目导出为 JSON 对象
      * @returns object
      */
     dump(): Object {
         let data: any = {};
+
+
         for (let [key, item] of this.settings) {
             if (item.type === 'button') continue;
             data[key] = item.value;
@@ -123,8 +176,7 @@ export class SettingUtils {
                 element.checked = item.value;
                 element.className = "b3-switch fn__flex-center";
                 itemElement = element;
-                element.onchange = item.button?.callback ?? (() => { });
-
+                element.onchange = item.action?.callback ?? (() => { });
                 break;
             case 'select':
                 let selectElement: HTMLSelectElement = document.createElement('select');
@@ -138,6 +190,7 @@ export class SettingUtils {
                     selectElement.appendChild(optionElement);
                 }
                 selectElement.value = item.value;
+                selectElement.onchange = item.action?.callback ?? (() => { });
                 itemElement = selectElement;
                 break;
             case 'slider':
@@ -151,6 +204,7 @@ export class SettingUtils {
                 sliderElement.value = item.value;
                 sliderElement.onchange = () => {
                     sliderElement.ariaLabel = sliderElement.value;
+                    item.action?.callback();
                 }
                 itemElement = sliderElement;
                 break;
@@ -158,12 +212,15 @@ export class SettingUtils {
                 let textInputElement: HTMLInputElement = document.createElement('input');
                 textInputElement.className = 'b3-text-field fn__flex-center fn__size200';
                 textInputElement.value = item.value;
+                textInputElement.onchange = item.action?.callback ?? (() => { });
                 itemElement = textInputElement;
+
                 break;
             case 'textarea':
                 let textareaElement: HTMLTextAreaElement = document.createElement('textarea');
                 textareaElement.className = "b3-text-field fn__block";
                 textareaElement.value = item.value;
+                textareaElement.onchange = item.action?.callback ?? (() => { });
                 itemElement = textareaElement;
                 break;
             case 'number':
@@ -176,7 +233,6 @@ export class SettingUtils {
             case 'button':
                 let buttonElement: HTMLButtonElement = document.createElement('button');
                 buttonElement.className = "b3-button b3-button--outline fn__flex-center fn__size200";
-
                 buttonElement.innerText = item.button?.label ?? 'Button';
                 buttonElement.onclick = item.button?.callback ?? (() => { });
                 itemElement = buttonElement;
@@ -198,16 +254,18 @@ export class SettingUtils {
         })
     }
 
+    /**
+     * Set the value in the setting to the value of the element 
+     * and return the element information
+     * @param key key name
+     * @returns element
+     */
     getElement(key: string) {
         let item = this.settings.get(key);
         let element = this.elements.get(key) as any;
-        // 额外增加的
-        // 当选项被删除时，
-        if (element === undefined) {
-            return
-        }
         switch (item.type) {
             case 'checkbox':
+                element.value = element.checked ? true : false;
                 element.checked = item.value;
                 break;
             case 'select':

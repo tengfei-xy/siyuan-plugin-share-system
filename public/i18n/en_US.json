@@ -17,6 +17,8 @@
     },
     "hintTitle":"About",
     "hintDesc": "1. Applicable scenarios: Documents need to be published publicly to the public network.<br>2. Publication nature: static document (will not change with changes in documents on Siyuan Notes)<br>3. Version nature: Beta version (function is unstable, shared links may be cleaned), <a href='https: //github.com/tengfei-xy/siyuan-plugin-share-system' > project Open source address</a><br>4. Supported platforms: desktop, desktop browser<br>5. Supported systems: macos, windows, linux<br>5. Cache directory location: Siyuan data folder/tmp/plugin/share-note (Note: Clean up before each export)<br>6. WeChat contact information: uBpHJlVdn5k15G3dhLh1",
+    "dialog_title": "Share management",
+    "menu_item_share_label": "share",
     "memu_share_link_title":"Share address",
     "menu_address_title" : "Backend address of the sharing system",
     "menu_address_desc" : "The default is http://124.223.15.220, you are welcome to build it yourself",
