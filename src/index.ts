@@ -877,7 +877,7 @@ export default class PluginSample extends Plugin {
             headers['Content-Type'] = 'text/plain'
         }
 
-        return axios.post(url, data, { headers, timeout: 300000 })
+        return axios.post(url, data, { headers, timeout: 3000 })
             .then(function (response) {
                 let data: IRes = response.data
                 console.debug("获取链接",data)
