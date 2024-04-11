@@ -4,10 +4,10 @@
 
 ## 使用前注意
 
-1. 本插件[目前版本](https://github.com/tengfei-xy/siyuan-plugin-share-system/releases)属于测试版，不稳定，适用于狭小的场景，欢迎大家补充[问题](https://github.com/tengfei-xy/siyuan-plugin-share-system/issues)
-2. 目前使用的公网服务器是作者提供的，欢迎大家自行搭建（这样，我就不用自己搞了哈哈哈）
-3. 链接目前是无过期时间的，但有可能会删除。链接的内容不会随笔记删除而删除。
-4. 微信联系方式：uBpHJlVdn5k15G3dhLh1
+1. 本插件[目前版本](https://github.com/tengfei-xy/siyuan-plugin-share-system/releases)属于稳定版，欢迎大家提交问题
+2. 目前使用的公网服务器是作者提供的，欢迎有动手能力的小伙伴通过[docker自行搭建](https://github.com/tengfei-xy/siyuan-plugin-share-system-engine)
+3. 链接目前是无过期时间的，链接的内容不会随笔记删除而删除。
+4. 微信: uBpHJlVdn5k15G3dhLh1 ，QQ: 1765552388
 
 ## 使用说明
 
@@ -23,6 +23,7 @@
 
 调试时，请在控制台调整为“所有级别”的日志等级。
 
+
 ## 原理
 
 导出html文件并上传到web服务器，web服务器同时生成对应的index.html作为首页。
@@ -30,6 +31,8 @@
 
 
 ## 版本说明
+
+- v1.0.0：功能稳定版，设置页面支持实时保存，更新说明文档 
 
 - v0.0.9：无更新（重新上传）
 

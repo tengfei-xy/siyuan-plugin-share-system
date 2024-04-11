@@ -59,10 +59,13 @@ interface IUploadArgsReq {
     theme: string;
     title: string;
     hide_version : boolean;
+    plugin_version: string
 }
 interface IGetLinkReq {
     appid: string;
     docid: string;
+    plugin_version: string
+
 }
 interface IAppearance {
     mode: number;
@@ -152,6 +155,7 @@ interface IFuncData {
 export default class PluginSample extends Plugin {
 
     private isMobile: boolean;
+    private plugin_version: string = "1.0.0";
     settingUtils: SettingUtils;
     async onload() {
         this.data[STORAGE_NAME] = { readonlyText: "Readonly" };
@@ -237,8 +241,8 @@ export default class PluginSample extends Plugin {
             key: "delete_share",
             value: "",
             type: "button",
-            title: this.i18n.menu_delete_share_desc,
-            description: this.i18n.menu_delete_share_label,
+            title: this.i18n.menu_delete_share_title,
+            description: this.i18n.menu_delete_share_desc,
             button: {
                 label: this.i18n.menu_delete_share_label,
                 callback: async () => {
@@ -261,6 +265,11 @@ export default class PluginSample extends Plugin {
             type: "textinput",
             title: this.i18n.menu_address_title,
             description: this.i18n.menu_address_desc,
+            action: {
+                callback: async () => {
+                    this.settingUtils.takeAndSave("address")
+                }
+            }
         });
         this.settingUtils.addItem({
             key: "access_code",
@@ -268,6 +277,11 @@ export default class PluginSample extends Plugin {
             type: "textinput",
             title: this.i18n.memu_access_code_title,
             description: this.i18n.memu_access_code_desc,
+            action:{
+                callback: async()=>{
+                    this.settingUtils.takeAndSave("access_code")
+                }
+            }
 
         });
         this.settingUtils.addItem({
@@ -276,7 +290,7 @@ export default class PluginSample extends Plugin {
             type: "checkbox",
             title: this.i18n.memu_enable_browser_title,
             description: this.i18n.memu_enable_browser_desc,
-            checkbox: {
+            action: {
                 callback: async () => {
                     const new_value = !this.settingUtils.get("enable_browser")
                     this.settingUtils.set("enable_browser", new_value)
@@ -290,8 +304,8 @@ export default class PluginSample extends Plugin {
             type: "checkbox",
             title: this.i18n.memu_hide_version_title,
             description: this.i18n.memu_hide_version_desc,
-            checkbox: {
-                callback: async () => {
+            action: {
+                callback: async () => { 
                     const new_value = !this.settingUtils.get("hide_version")
                     this.settingUtils.set("hide_version", new_value)
                     this.settingUtils.save()
@@ -715,6 +729,7 @@ export default class PluginSample extends Plugin {
         let appid = await this.getSystemID()
         let docid = await this.getActivePage()
 
+
         let g: IFuncData = {
             err: true,
             data: ""
@@ -794,7 +809,8 @@ export default class PluginSample extends Plugin {
             version: Constants.SIYUAN_VERSION,
             theme: await this.getTheme(),
             title: await this.getDocTitle(docid),
-            hide_version: this.settingUtils.get("hide_version")
+            hide_version: this.settingUtils.get("hide_version"),
+            plugin_version: this.plugin_version
         };
 
         let url = server_address + "/api/upload_args"
@@ -864,6 +880,8 @@ export default class PluginSample extends Plugin {
         const data: IGetLinkReq = {
             appid: await this.getSystemID(),
             docid: await this.getActivePage(),
+            plugin_version: this.plugin_version
+
         };
 
         const url = this.settingUtils.get("address") + "/api/getlink"
@@ -912,6 +930,8 @@ export default class PluginSample extends Plugin {
         const data: IGetLinkReq = {
             appid: await this.getSystemID(),
             docid: await this.getActivePage(),
+            plugin_version: this.plugin_version
+
         };
         const url = this.settingUtils.get("address") + "/api/deletelink"
 

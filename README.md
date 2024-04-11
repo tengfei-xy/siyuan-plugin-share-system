@@ -4,10 +4,10 @@
 
 ## Note before use
 
-1. This plug-in [current version] (https://github.com/tengfei-xy/siyuan-plugin-share-system/releases) is a beta version, unstable, and suitable for small scenes. Welcome to add [questions] (https://github.com/tengfei-xy/siyuan-plugin-share-system/issues)
-2. The public network server currently used is provided by the author, and everyone is welcome to build it by themselves (this way, I don’t have to do it myself hahaha)
-3. The link currently has no expiration date, but may be deleted. The linked content will not be deleted when the note is deleted.
-4. WeChat contact information: uBpHJlVdn5k15G3dhLh1
+1. This plug-in [current version] (https://github.com/tengfei-xy/siyuan-plugin-share-system/releases) is a stable version. You are welcome to submit questions.
+2. The public network server currently used is provided by the author. Hands-on partners are welcome to build it themselves through [docker](https://github.com/tengfei-xy/siyuan-plugin-share-system-engine)
+3. The link currently has no expiration time, and the content of the link will not be deleted when the note is deleted.
+4. WeChat: uBpHJlVdn5k15G3dhLh1, QQ: 1765552388
 
 ## Instructions for use
 
@@ -30,6 +30,8 @@ Export the html file and upload it to the web server. The web server also genera
 
 
 ## Release Notes
+
+- v1.0.0: functional stable version, The settings page supports real-time saving, updated documentation
 
 - v0.0.9: No update (reupload)
 
