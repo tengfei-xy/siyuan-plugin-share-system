@@ -59,7 +59,8 @@ interface IUploadArgsReq {
     theme: string;
     title: string;
     hide_version : boolean;
-    plugin_version: string
+    plugin_version: string;
+    exist_link_create: boolean
 }
 interface IGetLinkReq {
     appid: string;
@@ -294,6 +295,20 @@ export default class PluginSample extends Plugin {
                 callback: async () => {
                     const new_value = !this.settingUtils.get("enable_browser")
                     this.settingUtils.set("enable_browser", new_value)
+                    this.settingUtils.save()
+                }
+            }
+        });
+        this.settingUtils.addItem({
+            key: "exist_link_create",
+            value: false,
+            type: "checkbox",
+            title: this.i18n.memu_exist_link_create_title,
+            description: this.i18n.memu_exist_link_create_desc,
+            action: {
+                callback: async () => {
+                    const new_value = !this.settingUtils.get("exist_link_create")
+                    this.settingUtils.set("exist_link_create", new_value)
                     this.settingUtils.save()
                 }
             }
@@ -810,7 +825,8 @@ export default class PluginSample extends Plugin {
             theme: await this.getTheme(),
             title: await this.getDocTitle(docid),
             hide_version: this.settingUtils.get("hide_version"),
-            plugin_version: this.plugin_version
+            plugin_version: this.plugin_version,
+            exist_link_create: this.settingUtils.get("exist_link_create")
         };
 
         let url = server_address + "/api/upload_args"
