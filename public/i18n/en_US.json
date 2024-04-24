@@ -34,6 +34,8 @@
     "memu_exist_link_create_desc": "When the link already exists, whether to regenerate the link when uploading the article",
     "memu_hide_version_title": "Hide version number",
     "memu_hide_version_desc": "The version number of Siyuan Notes that hides the exported page title",
+    "memu_page_wide_title": "Page Width",
+    "memu_page_wide_desc": "Set the exported page width, supporting two units: px and %, such as 500px or 90%",
     "err_upload" : "Upload failed, please check from the console or contact the author",
     "err_network" : "Network error, please check the network",
     "msg_get_link_ok": "Get link successfully",

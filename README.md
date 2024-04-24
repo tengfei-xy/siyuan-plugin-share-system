@@ -31,6 +31,8 @@ Export the html file and upload it to the web server. The web server also genera
 
 ## Release Notes
 
+- v1.2.0: Add button to set page width
+
 - v1.1.0: Add button that can generate or preserve the link when it exists
 
 - v1.0.0: functional stable version, The settings page supports real-time saving, updated documentation

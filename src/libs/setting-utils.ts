@@ -45,15 +45,17 @@ export class SettingUtils {
         });
     }
 
-    async load() {
+    async load() { 
         let data = await this.plugin.loadData(this.file);
         console.debug('Load config:', data);
         if (data) {
             for (let [key, item] of this.settings) {
                 item.value = data?.[key] ?? item.value;
+                this.updateElementFromValue(key);
             }
         }
         this.plugin.data[this.name] = this.dump();
+
         return data;
     }
 
@@ -255,31 +257,28 @@ export class SettingUtils {
     }
 
     /**
-     * Set the value in the setting to the value of the element 
-     * and return the element information
-     * @param key key name
-     * @returns element
-     */
+    * return the element information
+    * @param key key name
+    * @returns element
+    */
     getElement(key: string) {
         let item = this.settings.get(key);
         let element = this.elements.get(key) as any;
         switch (item.type) {
             case 'checkbox':
-                element.value = element.checked ? true : false;
-                element.checked = item.value;
+                item.value = element.checked ? true : false;
                 break;
             case 'select':
-                element.value = item.value;
+                item.value = element.value;
                 break;
             case 'slider':
-                element.value = item.value;
-                element.ariaLabel = item.value;
+                item.value = element.value;
                 break;
             case 'textinput':
-                element.value = item.value;
+                item.value = element.value;
                 break;
             case 'textarea':
-                element.value = item.value;
+                item.value = element.value;
                 break;
         }
         return element;
@@ -288,7 +287,6 @@ export class SettingUtils {
     private updateValueFromElement(key: string) {
         let item = this.settings.get(key);
         let element = this.elements.get(key) as any;
-        // console.debug(element, element?.value);
         switch (item.type) {
             case 'checkbox':
                 item.value = element.checked;

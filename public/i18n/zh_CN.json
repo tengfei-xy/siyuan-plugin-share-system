@@ -34,6 +34,8 @@
     "memu_exist_link_create_desc": "当链接已存在时，上传文章时，是否重新生成链接",
     "memu_hide_version_title": "隐藏版本号",
     "memu_hide_version_desc": "隐藏导出的页面标题的思源笔记的版本号",
+    "memu_page_wide_title": "页面宽度",
+    "memu_page_wide_desc": "设定导出的页面宽度,支持两种单位px和%,比如500px或者90%",
     "err_upload" : "上传失败,请从控制台查看或联系作者",
     "err_network" : "网络错误",
     "msg_delete_link_ok" : "删除成功",

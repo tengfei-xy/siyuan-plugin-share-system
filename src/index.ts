@@ -61,6 +61,7 @@ interface IUploadArgsReq {
     hide_version : boolean;
     plugin_version: string;
     exist_link_create: boolean
+    page_wide: string;
 }
 interface IGetLinkReq {
     appid: string;
@@ -156,7 +157,7 @@ interface IFuncData {
 export default class PluginSample extends Plugin {
 
     private isMobile: boolean;
-    private plugin_version: string = "1.0.0";
+    private plugin_version: string = "1.2.0";
     settingUtils: SettingUtils;
     async onload() {
         this.data[STORAGE_NAME] = { readonlyText: "Readonly" };
@@ -202,11 +203,14 @@ export default class PluginSample extends Plugin {
         this.settingUtils = new SettingUtils(this, STORAGE_NAME);
 
         try {
-            this.settingUtils.load();
+            console.debug("加载插件")
+
+            // this.settingUtils.load();
         } catch (error) {
             console.error("Error loading settings storage, probably empty config json:", error);
         }
 
+        // 输入框-分享地址
         this.settingUtils.addItem({
             key: "share_link",
             value: "",
@@ -214,6 +218,8 @@ export default class PluginSample extends Plugin {
             title: this.i18n.memu_share_link_title,
             description: "",
         });
+
+        // 按钮-创建分享
         this.settingUtils.addItem({
             key: "create_share",
             value: "",
@@ -238,6 +244,8 @@ export default class PluginSample extends Plugin {
                 }
             }
         });
+
+        // 按钮-删除分享
         this.settingUtils.addItem({
             key: "delete_share",
             value: "",
@@ -260,6 +268,8 @@ export default class PluginSample extends Plugin {
                 }
             }
         });
+
+        // 按钮-服务器地址
         this.settingUtils.addItem({
             key: "address",
             value: "http://124.223.15.220",
@@ -272,6 +282,8 @@ export default class PluginSample extends Plugin {
                 }
             }
         });
+
+        // 输入框-访问码
         this.settingUtils.addItem({
             key: "access_code",
             value: "",
@@ -285,8 +297,10 @@ export default class PluginSample extends Plugin {
             }
 
         });
+
+        // 复选框-启用浏览器
         this.settingUtils.addItem({
-            key: "enable_browser",
+            key: "enable_browser", 
             value: false,
             type: "checkbox",
             title: this.i18n.memu_enable_browser_title,
@@ -299,6 +313,8 @@ export default class PluginSample extends Plugin {
                 }
             }
         });
+
+        // 复选框-重新生成链接
         this.settingUtils.addItem({
             key: "exist_link_create",
             value: false,
@@ -308,11 +324,49 @@ export default class PluginSample extends Plugin {
             action: {
                 callback: async () => {
                     const new_value = !this.settingUtils.get("exist_link_create")
+                    console.debug(new_value)
                     this.settingUtils.set("exist_link_create", new_value)
                     this.settingUtils.save()
                 }
             }
         });
+
+        // 输入框-分享地址
+        this.settingUtils.addItem({
+            key: "page_wide",
+            value: "500px",
+            type: "textinput",
+            title: this.i18n.memu_page_wide_title,
+            description: this.i18n.memu_page_wide_desc,
+            action: {
+                callback: async () => {
+                    let page_wide = this.settingUtils.take("page_wide")
+                    if (page_wide.endsWith("%")){
+                        let num = parseInt(page_wide)
+                        if (num > 100 || num < 0){
+                            pushErrMsg("请输入正确的百分比，如100%或者0%", 5000)
+                            this.settingUtils.set("page_wide","500px")
+                            return
+                        }
+
+                    }else if (page_wide.endsWith("px")){
+                        let num = parseInt(page_wide)
+                        if (num < 0){
+                            pushErrMsg("请输入正确的像素值，如500px", 5000)
+                            this.settingUtils.set("page_wide","500px")
+                            return
+                        }
+                    }else{
+                        pushErrMsg("请输入正确的格式，如500px或者100%", 5000)
+                        this.settingUtils.set("page_wide", "500px")
+                        return
+                    }
+                    this.settingUtils.save()
+                }
+            }
+        });
+
+        // 复选框-隐藏版本
         this.settingUtils.addItem({
             key: "hide_version",
             value: true,
@@ -327,6 +381,8 @@ export default class PluginSample extends Plugin {
                 }
             }
         });
+
+        // 提示
         this.settingUtils.addItem({
             key: "Hint",
             value: "",
@@ -341,7 +397,7 @@ export default class PluginSample extends Plugin {
 
     onLayoutReady() {
         console.debug("加载插件")
-        this.settingUtils.load();
+        this.settingUtils.load(); 
     }
 
     async onunload() {
@@ -826,7 +882,8 @@ export default class PluginSample extends Plugin {
             title: await this.getDocTitle(docid),
             hide_version: this.settingUtils.get("hide_version"),
             plugin_version: this.plugin_version,
-            exist_link_create: this.settingUtils.get("exist_link_create")
+            exist_link_create: this.settingUtils.get("exist_link_create"),
+            page_wide: this.settingUtils.get("page_wide")
         };
 
         let url = server_address + "/api/upload_args"
