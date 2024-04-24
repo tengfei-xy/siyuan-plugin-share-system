@@ -31,6 +31,8 @@ Export the html file and upload it to the web server. The web server also genera
 
 ## Release Notes
 
+- v1.2.1: Modify the default page width of 500px to 800px
+
 - v1.2.0: Add button to set page width
 
 - v1.1.0: Add button that can generate or preserve the link when it exists
