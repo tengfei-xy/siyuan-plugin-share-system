@@ -334,7 +334,7 @@ export default class PluginSample extends Plugin {
         // 输入框-分享地址
         this.settingUtils.addItem({
             key: "page_wide",
-            value: "500px",
+            value: "800px",
             type: "textinput",
             title: this.i18n.memu_page_wide_title,
             description: this.i18n.memu_page_wide_desc,
@@ -344,21 +344,21 @@ export default class PluginSample extends Plugin {
                     if (page_wide.endsWith("%")){
                         let num = parseInt(page_wide)
                         if (num > 100 || num < 0){
-                            pushErrMsg("请输入正确的百分比，如100%或者0%", 5000)
-                            this.settingUtils.set("page_wide","500px")
+                            pushErrMsg("请输入正确的百分比，如100%或者0%", 8000)
+                            this.settingUtils.set("page_wide","800px")
                             return
                         }
 
                     }else if (page_wide.endsWith("px")){
                         let num = parseInt(page_wide)
                         if (num < 0){
-                            pushErrMsg("请输入正确的像素值，如500px", 5000)
-                            this.settingUtils.set("page_wide","500px")
+                            pushErrMsg("请输入正确的像素值，如800px", 8000)
+                            this.settingUtils.set("page_wide","800px")
                             return
                         }
                     }else{
-                        pushErrMsg("请输入正确的格式，如500px或者100%", 5000)
-                        this.settingUtils.set("page_wide", "500px")
+                        pushErrMsg("请输入正确的格式，如800px或者100%", 8000)
+                        this.settingUtils.set("page_wide", "800px")
                         return
                     }
                     this.settingUtils.save()
