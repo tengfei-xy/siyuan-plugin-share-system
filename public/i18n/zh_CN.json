@@ -16,7 +16,7 @@
         "makesure": "使用这个模板之前，请阅读<a href=\"https://github.com/siyuan-note/plugin-sample\">官方教程</a>, 确保自己已经理解了插件的基本开发流程。"
     },
     "hintTitle":"关于",
-    "hintDesc":"1. 适用场景：需要公开发布文档到公共网络。<br>2. 发布性质：静态文档（不会随着思源笔记的文档变化而变化）<br>3. 版本性质: 稳定版<br>4. 支持平台: 桌面端、桌面浏览器端<br>5. 支持系统: macos、windows、linux<br>6. 开源地址：<a href='https: //github.com/tengfei-xy/siyuan-plugin-share-system' >插件</a>、<a href='https: //github.com/tengfei-xy/siyuan-plugin-share-system-engine' >服务器</a>（支持docker搭建）<br>7. 微信: uBpHJlVdn5k15G3dhLh1 ，QQ: 1765552388<br>8. 缓存目录位置: 思源数据文件夹/tmp/plugin/share-note (注：每次导出前均执行清理一次)<br>",
+    "hintDesc":"1. 适用场景：需要公开发布文档到公共网络。<br>2. 发布性质：静态文档（不会随着思源笔记的文档变化而变化）<br>3. 版本性质: 稳定版<br>4. 支持前端: 桌面端、桌面浏览器端<br>5. 支持后台: macos、windows、linux、docker<br>6. 开源地址：<a href='https: //github.com/tengfei-xy/siyuan-plugin-share-system' >插件</a>、<a href='https: //github.com/tengfei-xy/siyuan-plugin-share-system-engine' >服务器</a>（支持docker搭建）<br>7. 微信: uBpHJlVdn5k15G3dhLh1 ，QQ: 1765552388<br>8. 缓存目录位置: 思源数据文件夹/tmp/plugin/share-note (注：每次导出前均执行清理一次)<br>",
     "memu_share_link_title":"分享地址",
     "menu_address_title" : "分享系统的后台地址",
     "menu_address_desc" : "默认为http://124.223.15.220,支持docker搭建",

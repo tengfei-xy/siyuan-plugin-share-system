@@ -30,6 +30,7 @@ Export the html file and upload it to the web server. The web server also genera
 
 
 ## Release Notes
+- v1.3.0: Support docker as backend
 
 - v1.2.1: Modify the default page width of 500px to 800px
 
