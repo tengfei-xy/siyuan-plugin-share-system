@@ -165,7 +165,7 @@ interface IFuncData {
 export default class PluginSample extends Plugin {
 
     // private isMobile: boolean;
-    private plugin_version: string = "1.3.0";
+    private plugin_version: string = "2.0.0";
     settingUtils: SettingUtils;
     async onload() {
         this.data[STORAGE_NAME] = { readonlyText: "Readonly" };
