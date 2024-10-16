@@ -1,12 +1,3 @@
-/*
- * Copyright (c) 2023 by frostime. All Rights Reserved.
- * @Author       : frostime
- * @Date         : 2023-12-17 18:28:19
- * @FilePath     : /src/libs/setting-utils.ts
- * @LastEditTime : 2024-01-15 20:45:16
- * @Description  : 
- */
-
 import { Plugin, Setting } from 'siyuan';
 
 export class SettingUtils {
@@ -18,6 +9,7 @@ export class SettingUtils {
     elements: Map<string, HTMLElement> = new Map();
 
     constructor(plugin: Plugin, name?: string, callback?: (data: any) => void, width?: string, height?: string) {
+        // menu-config
         this.name = name ?? 'settings';
         this.plugin = plugin;
         this.file = this.name.endsWith('.json') ? this.name : `${this.name}.json`;

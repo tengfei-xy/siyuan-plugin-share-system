@@ -5,6 +5,7 @@ import {
     Menu,
     getFrontend,
     Constants,
+    ICommandOption,
 } from "siyuan";
 import "@/index.scss";
 
@@ -58,16 +59,23 @@ interface IUploadArgsReq {
     version: string;
     theme: string;
     title: string;
-    hide_version : boolean;
+    hide_version: boolean;
     plugin_version: string;
-    exist_link_create: boolean
+    exist_link_create: boolean;
     page_wide: string;
+    access_key: string;
+    access_key_enable: boolean;
 }
 interface IGetLinkReq {
     appid: string;
     docid: string;
     plugin_version: string
-
+}
+interface IAccessKeyReq {
+    appid: string;
+    docid: string;
+    accesskey: string;
+    plugin_version: string
 }
 interface IAppearance {
     mode: number;
@@ -156,15 +164,15 @@ interface IFuncData {
 
 export default class PluginSample extends Plugin {
 
-    private isMobile: boolean;
+    // private isMobile: boolean;
     private plugin_version: string = "1.3.0";
     settingUtils: SettingUtils;
     async onload() {
         this.data[STORAGE_NAME] = { readonlyText: "Readonly" };
         console.debug("loading plugin-sample", this.i18n);
-
-        const frontEnd = getFrontend();
-        this.isMobile = frontEnd === "mobile" || frontEnd === "browser-mobile";
+        // this.commands.
+        // const frontEnd = getFrontend();
+        // this.isMobile = frontEnd === "mobile" || frontEnd === "browser-mobile";
 
         // 在mac 上使用SF symbol生成
         this.addIcons(`<symbol id="iconFace" viewBox="0 0 32 32">
@@ -178,44 +186,35 @@ export default class PluginSample extends Plugin {
 <path d="M224.653061 642.612245c-72.097959 0-130.612245-58.514286-130.612245-130.612245s58.514286-130.612245 130.612245-130.612245 130.612245 58.514286 130.612245 130.612245-58.514286 130.612245-130.612245 130.612245z m0-219.428572c-49.110204 0-88.816327 39.706122-88.816326 88.816327s39.706122 88.816327 88.816326 88.816327 88.816327-39.706122 88.816327-88.816327-40.228571-88.816327-88.816327-88.816327zM580.440816 355.265306c-72.097959 0-130.612245-58.514286-130.612245-130.612245s58.514286-130.612245 130.612245-130.612245 130.612245 58.514286 130.612245 130.612245-59.036735 130.612245-130.612245 130.612245z m0-219.428571c-49.110204 0-88.816327 39.706122-88.816326 88.816326s39.706122 88.816327 88.816326 88.816327 88.816327-39.706122 88.816327-88.816327-40.228571-88.816327-88.816327-88.816326zM799.346939 929.959184c-72.097959 0-130.612245-58.514286-130.612245-130.612245s58.514286-130.612245 130.612245-130.612245 130.612245 58.514286 130.612245 130.612245-58.514286 130.612245-130.612245 130.612245z m0-219.428572c-49.110204 0-88.816327 39.706122-88.816327 88.816327s39.706122 88.816327 88.816327 88.816326 88.816327-39.706122 88.816326-88.816326-39.706122-88.816327-88.816326-88.816327z" fill="#13227a" p-id="4434"></path><path d="M301.453061 454.530612c-6.791837 0-13.583673-3.134694-17.763265-9.404081-6.269388-9.926531-3.657143-22.465306 6.269388-28.734694l201.665306-131.657143c9.926531-6.269388 22.465306-3.657143 28.734694 6.269388s3.657143 22.465306-6.269388 28.734694L312.42449 451.395918c-3.134694 2.089796-7.314286 3.134694-10.971429 3.134694zM699.036735 775.836735c-3.134694 0-6.791837-0.522449-9.404082-2.612245l-376.163265-195.395919c-10.44898-5.22449-14.106122-17.763265-8.881633-28.212244 5.22449-10.44898 17.763265-14.106122 28.212245-8.881633l376.163265 195.395918c10.44898 5.22449 14.106122 17.763265 8.881633 28.212245-3.657143 7.314286-10.971429 11.493878-18.808163 11.493878z" fill="#13227a" p-id="4435"></path><</symbol>`);
 
         // 添加顶部菜单
-        const topBarElement = this.addTopBar({
+        this.addTopBar({
             icon: "iconFace",
             title: this.i18n.topBarTitle,
             position: "right",
-            callback: () => {
-                if (this.isMobile) {
-                    this.addMenu();
-                } else {
-                    let rect = topBarElement.getBoundingClientRect();
-                    // 如果被隐藏，则使用更多按钮
-                    if (rect.width === 0) {
-                        rect = document.querySelector("#barMore").getBoundingClientRect();
-                    }
-                    if (rect.width === 0) {
-                        rect = document.querySelector("#barPlugins").getBoundingClientRect();
-                    }
-                    this.addMenu(rect);
+            callback: async () => {
+                let docid = await this.getActivePage()
+                if (!docid) {
+                    pushErrMsg("未打开文档页面", 7000)
+                    return
                 }
+                try {
+                    await this.getLink()
+
+                } catch (error) {
+                    pushErrMsg(error.message, 7000)
+                }
+                this.openSetting();
             }
         });
 
         // 当onLayoutReady()执行时，this.settingUtils被载入
         this.settingUtils = new SettingUtils(this, STORAGE_NAME);
 
-        try {
-            console.debug("加载插件")
-
-            // this.settingUtils.load();
-        } catch (error) {
-            console.error("Error loading settings storage, probably empty config json:", error);
-        }
-
         // 输入框-分享地址
         this.settingUtils.addItem({
             key: "share_link",
             value: "",
             type: "textinput",
-            title: this.i18n.memu_share_link_title,
+            title: this.i18n.menu_share_link_title,
             description: "",
         });
 
@@ -245,6 +244,7 @@ export default class PluginSample extends Plugin {
             }
         });
 
+
         // 按钮-删除分享
         this.settingUtils.addItem({
             key: "delete_share",
@@ -260,8 +260,9 @@ export default class PluginSample extends Plugin {
                         this.settingUtils.set("share_link", "");
                         pushMsg("删除成功", 7000)
                         this.settingUtils.disable("delete_share")
+                        this.settingUtils.disable("access_key_enable")
 
-                    }else{
+                    } else {
                         pushErrMsg(g.data, 7000)
                     }
 
@@ -269,6 +270,87 @@ export default class PluginSample extends Plugin {
             }
         });
 
+        // 按钮-复制链接
+        this.settingUtils.addItem({
+            key: "copy_link",
+            value: "",
+            type: "button",
+            title: this.i18n.menu_copy_link_title,
+            description: this.i18n.menu_copy_link_desc,
+            button: {
+                label: this.i18n.menu_copy_link_title,
+                callback: async () => {
+                    let content = await this.settingUtils.get("share_link")
+                    // navigator clipboard 需要https等安全上下文
+                    if (navigator.clipboard && window.isSecureContext) {
+                        // navigator clipboard 向剪贴板写文本
+                        navigator.clipboard.writeText(content);
+                    } else {
+                        let textArea = document.createElement("textarea");
+                        textArea.value = content;
+                        // 使text area不在viewport，同时设置不可见
+                        textArea.style.position = "absolute";
+                        textArea.style.opacity = "0";
+                        textArea.style.left = "-999999px";
+                        textArea.style.top = "-999999px";
+                        document.body.appendChild(textArea);
+                        textArea.focus();
+                        textArea.select();
+                        document.execCommand('copy');
+                        textArea.remove();
+
+                    }
+
+                }
+            }
+        });
+
+        // 按钮-复制链接(含标题和访问码)
+        this.settingUtils.addItem({
+            key: "copy_link_full",
+            value: "",
+            type: "button",
+            title: this.i18n.menu_copy_link_full_title,
+            description: this.i18n.menu_copy_link_full_desc,
+            button: {
+                label: this.i18n.menu_copy_link_full_title,
+                callback: async () => {
+                    let share_link = await this.settingUtils.get("share_link")
+                    let content = await this.settingUtils.get("share_link")
+                    let title = await this.getDocTitle( await this.getActivePage())
+                    let access_key_enable = await this.settingUtils.get("access_key_enable") as boolean
+                    console.log(access_key_enable)
+                    if (access_key_enable) {
+                        let access_key = await this.settingUtils.get("access_key") as string
+                        content=`通过思源笔记分享文档: ${title} 链接: ${share_link} 访问码: ${access_key}`
+                    }else{
+
+                        content=`通过思源笔记分享文档: ${title} 链接: ${share_link}`
+                    }
+                    // navigator clipboard 需要https等安全上下文
+                    if (navigator.clipboard && window.isSecureContext) {
+                        // navigator clipboard 向剪贴板写文本
+                        navigator.clipboard.writeText(content);
+                    } else {
+                        let textArea = document.createElement("textarea");
+                        textArea.value = content;
+                        // 使text area不在viewport，同时设置不可见
+                        textArea.style.position = "absolute";
+                        textArea.style.opacity = "0";
+                        textArea.style.left = "-999999px";
+                        textArea.style.top = "-999999px";
+                        document.body.appendChild(textArea);
+                        textArea.focus();
+                        textArea.select();
+                        document.execCommand('copy');
+                        textArea.remove();
+
+                    }
+
+                }
+            }
+        });
+                
         // 按钮-服务器地址
         this.settingUtils.addItem({
             key: "address",
@@ -288,23 +370,65 @@ export default class PluginSample extends Plugin {
             key: "access_code",
             value: "",
             type: "textinput",
-            title: this.i18n.memu_access_code_title,
-            description: this.i18n.memu_access_code_desc,
-            action:{
-                callback: async()=>{
+            title: this.i18n.menu_access_code_title,
+            description: this.i18n.menu_access_code_desc,
+            action: {
+                callback: async () => {
                     this.settingUtils.takeAndSave("access_code")
                 }
             }
 
         });
+        // 输入框-访问密码
+        this.settingUtils.addItem({
+            key: "access_key",
+            value: "",
+            type: "textinput",
+            title: this.i18n.menu_access_key_title,
+            description: this.i18n.menu_access_key_desc,
+            action: {
+                callback: async () => {
+                    this.settingUtils.takeAndSave("access_key")
+                }
+            }
+
+        });
+
+        // 按钮-启动访问密码
+        this.settingUtils.addItem({
+            key: "access_key_enable",
+            value: false,
+            type: "checkbox",
+            title: this.i18n.menu_access_key_enable_title,
+            description: this.i18n.menu_access_key_enable_desc,
+            action: {
+                callback: async () => {
+                    const new_value = !this.settingUtils.get("access_key_enable")
+                    if (new_value) {
+                        this.settingUtils.enable("access_key")
+                    } else {
+                        this.settingUtils.disable("access_key")
+
+                    }
+                    this.settingUtils.set("access_key_enable", new_value)
+                    this.settingUtils.save()
+                    if (new_value) {
+                        this.access_key_enable()
+                    } else {
+                        this.access_key_disable()
+                    }
+
+                }
+            }
+        });
 
         // 复选框-启用浏览器
         this.settingUtils.addItem({
-            key: "enable_browser", 
+            key: "enable_browser",
             value: false,
             type: "checkbox",
-            title: this.i18n.memu_enable_browser_title,
-            description: this.i18n.memu_enable_browser_desc,
+            title: this.i18n.menu_enable_browser_title,
+            description: this.i18n.menu_enable_browser_desc,
             action: {
                 callback: async () => {
                     const new_value = !this.settingUtils.get("enable_browser")
@@ -319,8 +443,8 @@ export default class PluginSample extends Plugin {
             key: "exist_link_create",
             value: false,
             type: "checkbox",
-            title: this.i18n.memu_exist_link_create_title,
-            description: this.i18n.memu_exist_link_create_desc,
+            title: this.i18n.menu_exist_link_create_title,
+            description: this.i18n.menu_exist_link_create_desc,
             action: {
                 callback: async () => {
                     const new_value = !this.settingUtils.get("exist_link_create")
@@ -336,27 +460,27 @@ export default class PluginSample extends Plugin {
             key: "page_wide",
             value: "800px",
             type: "textinput",
-            title: this.i18n.memu_page_wide_title,
-            description: this.i18n.memu_page_wide_desc,
+            title: this.i18n.menu_page_wide_title,
+            description: this.i18n.menu_page_wide_desc,
             action: {
                 callback: async () => {
                     let page_wide = this.settingUtils.take("page_wide")
-                    if (page_wide.endsWith("%")){
+                    if (page_wide.endsWith("%")) {
                         let num = parseInt(page_wide)
-                        if (num > 100 || num < 0){
+                        if (num > 100 || num < 0) {
                             pushErrMsg("请输入正确的百分比，如100%或者0%", 8000)
-                            this.settingUtils.set("page_wide","800px")
+                            this.settingUtils.set("page_wide", "800px")
                             return
                         }
 
-                    }else if (page_wide.endsWith("px")){
+                    } else if (page_wide.endsWith("px")) {
                         let num = parseInt(page_wide)
-                        if (num < 0){
+                        if (num < 0) {
                             pushErrMsg("请输入正确的像素值，如800px", 8000)
-                            this.settingUtils.set("page_wide","800px")
+                            this.settingUtils.set("page_wide", "800px")
                             return
                         }
-                    }else{
+                    } else {
                         pushErrMsg("请输入正确的格式，如800px或者100%", 8000)
                         this.settingUtils.set("page_wide", "800px")
                         return
@@ -371,10 +495,10 @@ export default class PluginSample extends Plugin {
             key: "hide_version",
             value: true,
             type: "checkbox",
-            title: this.i18n.memu_hide_version_title,
-            description: this.i18n.memu_hide_version_desc,
+            title: this.i18n.menu_hide_version_title,
+            description: this.i18n.menu_hide_version_desc,
             action: {
-                callback: async () => { 
+                callback: async () => {
                     const new_value = !this.settingUtils.get("hide_version")
                     this.settingUtils.set("hide_version", new_value)
                     this.settingUtils.save()
@@ -397,7 +521,7 @@ export default class PluginSample extends Plugin {
 
     onLayoutReady() {
         console.debug("加载插件")
-        this.settingUtils.load(); 
+        this.settingUtils.load();
     }
 
     async onunload() {
@@ -516,7 +640,7 @@ export default class PluginSample extends Plugin {
         if (access_code != "") {
             headers['Authorization'] = ' Token ' + access_code
         }
-        
+
 
         return axios_plus.post(url, data, headers)
             .then(function (response) {
@@ -872,7 +996,9 @@ export default class PluginSample extends Plugin {
     // 返回参数: IFuncData.err 表示请求是否成功
     // 返回参数: IFuncData.data 表示返回链接
     async uploadArgs(server_address: string, content: string) {
-        let docid = await this.getActivePage() 
+        let access_key = this.settingUtils.get("access_key") as string
+
+        let docid = await this.getActivePage()
         let data: IUploadArgsReq = {
             appid: await this.getSystemID(),
             docid: docid,
@@ -883,14 +1009,16 @@ export default class PluginSample extends Plugin {
             hide_version: this.settingUtils.get("hide_version"),
             plugin_version: this.plugin_version,
             exist_link_create: this.settingUtils.get("exist_link_create"),
-            page_wide: this.settingUtils.get("page_wide")
+            page_wide: this.settingUtils.get("page_wide"),
+            access_key_enable: this.settingUtils.get("access_key_enable"),
+            access_key: access_key.length != 0 ? access_key : "",
         };
 
         let url = server_address + "/api/upload_args"
 
         let headers = {}
-
-        const enable_browser = this.settingUtils.get("enable_browser")
+        const utils = this.settingUtils
+        const enable_browser = utils.get("enable_browser")
         if (enable_browser) {
             headers['Content-Type'] = 'application/json'
             headers['cros-status'] = enable_browser
@@ -907,8 +1035,10 @@ export default class PluginSample extends Plugin {
                 let data: IRes = response.data
                 g.err = false
                 g.data = data.data
-                console.debug("上传参数",data)
+                console.debug("上传参数", data)
                 if (data.err == 0) {
+                    utils.enable("copy_link")
+                    utils.enable("copy_link_full")
                     return g
                 } else {
                     pushErrMsg(data.msg, 7000)
@@ -956,11 +1086,11 @@ export default class PluginSample extends Plugin {
             plugin_version: this.plugin_version
 
         };
-
-        const url = this.settingUtils.get("address") + "/api/getlink"
+        let utils = this.settingUtils
+        const url = utils.get("address") + "/api/getlink"
 
         let headers = {}
-        const enable_browser = this.settingUtils.get("enable_browser")
+        const enable_browser = utils.get("enable_browser")
         if (enable_browser) {
             headers['Content-Type'] = 'application/json'
             headers['cros-status'] = enable_browser
@@ -968,26 +1098,56 @@ export default class PluginSample extends Plugin {
             headers['Content-Type'] = 'text/plain'
         }
 
-        return axios.post(url, data, { headers, timeout: 3000 })
+        utils.enable("create_share")
+        utils.disable("delete_share")
+        utils.disable("copy_link")
+        utils.disable("copy_link_full")
+
+        utils.set("share_link", "")
+
+
+        let ret = false
+        await axios.post(url, data, { headers, timeout: 3000 })
             .then(function (response) {
                 let data: IRes = response.data
-                console.debug("获取链接",data)
+                switch (data.err) {
+                    case 0:
+                        g.err = false
+                        g.data = data.data
+                        utils.enable("delete_share")
+                        utils.set("share_link", g.data)
+                        utils.enable("copy_link")
+                        utils.enable("copy_link_full")
 
-                if (data.err == 0 || data.err ==3){
-                    g.err = false
-                }else{
-                    g.err = true
+                        ret = true
+                        console.log(ret)
+                        break
+                    case 3:
+                        g.err = false
+                        ret = true
+                        break
+                    default:
+                        g.err = true
+                        pushErrMsg(g.data, 7000)
+                        break
                 }
-                g.data = data.data
-
                 return g
 
             })
             .catch(function (error) {
+                utils.disable("create_share")
                 console.error(error)
                 g.data = error.message
                 return g
             })
+        if (!ret) {
+            pushErrMsg("后台访问失败")
+            console.error("获取链接失败，停止获取访问密钥")
+            return
+        }
+        this.access_key_get()
+
+
     }
 
     // 功能: 删除分享链接
@@ -1006,10 +1166,11 @@ export default class PluginSample extends Plugin {
             plugin_version: this.plugin_version
 
         };
-        const url = this.settingUtils.get("address") + "/api/deletelink"
+        const utils = this.settingUtils
+        const url = utils.get("address") + "/api/deletelink"
 
         let headers = {}
-        const enable_browser = this.settingUtils.get("enable_browser")
+        const enable_browser = utils.get("enable_browser")
         if (enable_browser) {
             headers['Content-Type'] = 'application/json'
             headers['cros-status'] = enable_browser
@@ -1020,8 +1181,14 @@ export default class PluginSample extends Plugin {
         return axios.post(url, data, { headers })
             .then(function (response) {
                 let data: IRes = response.data
-                console.debug("删除链接",data)
+                console.debug("删除链接", data)
                 if (data.err == 0 || data.err == 3) {
+                utils.disable("copy_link")
+                utils.disable("copy_link_full")
+
+                utils.disable("access_key")
+                utils.set("access_key","")
+                utils.set("access_key_enable",false)
                     g.err = false
                 } else {
                     g.err = true
@@ -1037,52 +1204,151 @@ export default class PluginSample extends Plugin {
             })
     }
 
-    // 插件菜单列表
-    private async addMenu(rect?: DOMRect) {
-        const menu = new Menu("topBar", () => {
-            // console.debug("初始化菜单");
-        });
-
-        menu.addSeparator();
-        menu.addItem({
-            icon: "iconSettings",
-            label: "设置",
-            click: async () => {
-                this.settingUtils.disable("delete_share")
-                this.settingUtils.set("share_link", "")
-
-                try {
-                    let g = await this.getLink()
-                    if (g.err == false) {
-                        this.settingUtils.set("share_link", g.data)
-                        if (g.data != ""){
-                            this.settingUtils.enable("delete_share")
-                        }
-
-                    }else{
-                        pushErrMsg(g.data, 7000)
-                    }
-
-                } catch (error) {
-                    pushErrMsg(error.message, 7000)
-                }
-
-
-                this.openSetting();
-            },
-
-        });
-        menu.addSeparator();
-
-
-        if (this.isMobile) {
-            menu.fullscreen();
-        } else {
-            menu.open({
-                x: rect.right,
-                y: rect.bottom,
-                isLeft: true,
-            });
+    // 功能: 访问密钥的 API
+    // 返回: IFuncData结构体，包含err和data，
+    // 返回参数: err 表示请求是否成功
+    async access_key_enable() {
+        let g: IFuncData = {
+            err: true,
+            data: "",
         }
+
+        const data: IAccessKeyReq = {
+            appid: await this.getSystemID(),
+            docid: await this.getActivePage(),
+            accesskey: this.settingUtils.get("access_key"),
+            plugin_version: this.plugin_version
+
+        };
+        let utils = this.settingUtils
+        const url = utils.get("address") + "/api/key?action=enable"
+
+        let headers = {}
+        const enable_browser = utils.get("enable_browser")
+        if (enable_browser) {
+            headers['Content-Type'] = 'application/json'
+            headers['cros-status'] = enable_browser
+        } else {
+            headers['Content-Type'] = 'text/plain'
+        }
+
+        return axios({
+            method: "POST",
+            url: url,
+            data: data,
+        }).then(function (response) {
+            let data = response.data;
+
+            // 根据你的逻辑处理响应数据
+            if (data.err == 0) {
+                g.err = false;
+                utils.set("access_key", data.data)
+                pushMsg("访问密钥已启动")
+            } else {
+                g.err = true;
+            }
+            g.data = data.data;
+
+            return g;
+        })
+            .catch(function (error) {
+                console.error(error);
+                // 处理错误
+                g.data = error.message;
+                return g;
+            });
+
+    }
+
+    async access_key_disable() {
+        let g: IFuncData = {
+            err: true,
+            data: "",
+        }
+
+        const data: IAccessKeyReq = {
+            appid: await this.getSystemID(),
+            docid: await this.getActivePage(),
+            accesskey: "",
+            plugin_version: this.plugin_version
+
+        };
+
+        const url = this.settingUtils.get("address") + "/api/key?action=disable"
+
+        let headers = {}
+        const enable_browser = this.settingUtils.get("enable_browser")
+        if (enable_browser) {
+            headers['Content-Type'] = 'application/json'
+            headers['cros-status'] = enable_browser
+        } else {
+            headers['Content-Type'] = 'text/plain'
+        }
+
+        return axios({
+            method: "POST",
+            url: url,
+            data: data,
+        }).then(function (response) {
+            let data = response.data;
+
+            // 根据你的逻辑处理响应数据
+            if (data.err == 0 || data.err == 3) {
+                g.err = false;
+                pushMsg("访问密钥已关闭")
+
+            } else {
+                g.err = true;
+            }
+            g.data = data.data;
+
+            return g;
+        })
+            .catch(function (error) {
+                console.error(error);
+                // 处理错误
+                g.data = error.message;
+                return g;
+            });
+
+    }
+    async access_key_get() {
+
+        let appid = await this.getSystemID()
+        let docid = await this.getActivePage()
+
+        const utils = this.settingUtils
+        const url = utils.get("address") + "/api/key?" + "appid=" + appid + "&docid=" + docid
+
+        let headers = {}
+        const enable_browser = utils.get("enable_browser")
+        if (enable_browser) {
+            headers['Content-Type'] = 'application/json'
+            headers['cros-status'] = enable_browser
+        } else {
+            headers['Content-Type'] = 'text/plain'
+        }
+
+        axios({
+            method: "GET",
+            url: url,
+        }).then(function (response) {
+            let data = response.data;
+
+            if (data.err == 0) {
+                let access_key = data.data.access_key
+                let access_key_enable: boolean = data.data.access_key_enable
+                utils.set("access_key", access_key)
+                utils.set("access_key_enable", access_key_enable)
+            } else {
+                pushErrMsg(data.msg)
+            }
+
+        })
+            .catch(function (error) {
+                console.error(error);
+                return;
+            });
+
     }
 }
