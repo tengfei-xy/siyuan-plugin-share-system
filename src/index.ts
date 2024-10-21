@@ -65,6 +65,8 @@ interface IUploadArgsReq {
     page_wide: string;
     access_key: string;
     access_key_enable: boolean;
+    mini_menu: boolean;
+    title_image_height: string
 }
 interface IGetLinkReq {
     appid: string;
@@ -227,19 +229,8 @@ export default class PluginSample extends Plugin {
             description: this.i18n.menu_create_share_desc,
             button: {
                 label: this.i18n.menu_create_share_label,
-                callback: async () => {
-                    this.settingUtils.disable("create_share")
-
-                    let g = await this.createLink()
-                    if (g.err == false) {
-                        this.settingUtils.set("share_link", g.data)
-                        this.settingUtils.enable("delete_share",)
-                        pushMsg("创建成功", 7000)
-                    } else {
-                        pushErrMsg(g.data, 7000)
-                    }
-                    this.settingUtils.enable("create_share")
-
+                callback:  () => {
+                     this.createLink()
                 }
             }
         });
@@ -400,7 +391,7 @@ export default class PluginSample extends Plugin {
             value: false,
             type: "checkbox",
             title: this.i18n.menu_access_key_enable_title,
-            description: this.i18n.menu_access_key_enable_desc,
+            description: this.i18n.menu_access_key_enable_title_desc,
             action: {
                 callback: async () => {
                     const new_value = !this.settingUtils.get("access_key_enable")
@@ -485,6 +476,37 @@ export default class PluginSample extends Plugin {
                         this.settingUtils.set("page_wide", "800px")
                         return
                     }
+                    this.settingUtils.save()
+                }
+            }
+        });
+
+        // 复选框-导航菜单
+        this.settingUtils.addItem({
+            key: "mini_menu",
+            value: true,
+            type: "checkbox",
+            title: this.i18n.menu_mini_menu_title,
+            description: this.i18n.menu_mini_menu_desc,
+            action: {
+                callback: async () => {
+                    const new_value = !this.settingUtils.get("mini_menu")
+                    this.settingUtils.set("mini_menu", new_value)
+                    this.settingUtils.save()
+                }
+            }
+        });
+        // 输入框-题头图高度
+        this.settingUtils.addItem({
+            key: "title_image_height",
+            value: "30",
+            type: "textinput",
+            title: this.i18n.menu_title_image_height_title,
+            description: this.i18n.menu_title_image_height_desc,
+            action: {
+                callback: async () => {
+                    const new_value = !this.settingUtils.get("title_image_height")
+                    this.settingUtils.set("title_image_height", new_value)
                     this.settingUtils.save()
                 }
             }
@@ -980,6 +1002,7 @@ export default class PluginSample extends Plugin {
                     return g
                 } else {
                     g.data = data.msg
+                    g.err = true
                     return g
                 }
             })
@@ -990,7 +1013,6 @@ export default class PluginSample extends Plugin {
                 return g
             })
     }
-
 
     // 功能: 上传分享文档的参数到分享服务器
     // 返回参数: IFuncData.err 表示请求是否成功
@@ -1012,6 +1034,8 @@ export default class PluginSample extends Plugin {
             page_wide: this.settingUtils.get("page_wide"),
             access_key_enable: this.settingUtils.get("access_key_enable"),
             access_key: access_key.length != 0 ? access_key : "",
+            mini_menu: this.settingUtils.get("mini_menu"),
+            title_image_height : this.settingUtils.get("title_image_height"),
         };
 
         let url = server_address + "/api/upload_args"
@@ -1041,7 +1065,8 @@ export default class PluginSample extends Plugin {
                     utils.enable("copy_link_full")
                     return g
                 } else {
-                    pushErrMsg(data.msg, 7000)
+                    g.err = true
+                    g.data = data.data
                     return g
                 }
             })
@@ -1057,6 +1082,8 @@ export default class PluginSample extends Plugin {
     // 返回参数: IFuncData.err 表示请求是否成功
     // 返回参数: IFuncData.data 表示返回链接
     async createLink() {
+        this.settingUtils.disable("create_share")
+
         let g: IFuncData = {
             err: true,
             data: ""
@@ -1067,7 +1094,21 @@ export default class PluginSample extends Plugin {
             pushErrMsg(g.data, 7000)
             return g
         }
-        return await this.uploadArgs(server_address, g.data)
+
+        g = await this.uploadArgs(server_address, g.data)
+
+        if (g.err == true) {
+            pushErrMsg(g.data, 7000)
+            return
+        } 
+
+        this.settingUtils.set("share_link", g.data)
+        this.settingUtils.enable("delete_share",)
+        this.settingUtils.enable("create_share")
+        this.settingUtils.enable("access_key")
+        this.settingUtils.enable("access_key_enable")
+        pushMsg("创建成功", 7000)
+
     }
 
     // 功能: 获取分享链接
@@ -1102,8 +1143,10 @@ export default class PluginSample extends Plugin {
         utils.disable("delete_share")
         utils.disable("copy_link")
         utils.disable("copy_link_full")
-
         utils.set("share_link", "")
+        utils.disable("access_key_enable")
+        utils.disable("access_key")
+
 
 
         let ret = false
@@ -1119,6 +1162,8 @@ export default class PluginSample extends Plugin {
                         utils.enable("copy_link")
                         utils.enable("copy_link_full")
 
+                        utils.enable("access_key_enable")
+                        utils.enable("access_key")
                         ret = true
                         console.log(ret)
                         break
@@ -1313,11 +1358,14 @@ export default class PluginSample extends Plugin {
 
     }
     async access_key_get() {
+        const utils = this.settingUtils
 
+        utils.set("access_key_enable", false)
+        utils.set("access_key", "")
+        
         let appid = await this.getSystemID()
         let docid = await this.getActivePage()
 
-        const utils = this.settingUtils
         const url = utils.get("address") + "/api/key?" + "appid=" + appid + "&docid=" + docid
 
         let headers = {}
