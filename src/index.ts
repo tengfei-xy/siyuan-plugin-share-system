@@ -164,12 +164,22 @@ interface IFuncData {
     fdata?: any
 }
 
+const result: string[][] = [
+    ["处理完成","json解析错误","系统错误","此页面没有共享","错误请求地址"],
+    ["Processing completed", "json parsing error", "system error", "this page is not shared", "error request address"]
+];
 export default class PluginSample extends Plugin {
 
     // private isMobile: boolean;
     private plugin_version: string = "2.0.0";
     settingUtils: SettingUtils;
+    private lang: string;
+
+
+
     async onload() {
+        const i18n = this.i18n
+        
         this.data[STORAGE_NAME] = { readonlyText: "Readonly" };
         console.debug("loading plugin-sample", this.i18n);
         // this.commands.
@@ -195,14 +205,16 @@ export default class PluginSample extends Plugin {
             callback: async () => {
                 let docid = await this.getActivePage()
                 if (!docid) {
-                    pushErrMsg("未打开文档页面", 7000)
+                    this.pushErrMsgLang(i18n.result_no_open_page)
                     return
                 }
                 try {
                     await this.getLink()
 
                 } catch (error) {
+                    console.error(error)
                     pushErrMsg(error.message, 7000)
+
                 }
                 this.openSetting();
             }
@@ -229,8 +241,8 @@ export default class PluginSample extends Plugin {
             description: this.i18n.menu_create_share_desc,
             button: {
                 label: this.i18n.menu_create_share_label,
-                callback:  () => {
-                     this.createLink()
+                callback: () => {
+                    this.createLink()
                 }
             }
         });
@@ -249,12 +261,11 @@ export default class PluginSample extends Plugin {
                     let g = await this.deleteLink()
                     if (g.err == false) {
                         this.settingUtils.set("share_link", "");
-                        pushMsg("删除成功", 7000)
+                        pushMsg(this.i18n.result_delete_ok)
                         this.settingUtils.disable("delete_share")
                         this.settingUtils.disable("access_key_enable")
-
                     } else {
-                        pushErrMsg(g.data, 7000)
+                        this.pushErrMsgLang(g.err)
                     }
 
                 }
@@ -308,15 +319,14 @@ export default class PluginSample extends Plugin {
                 callback: async () => {
                     let share_link = await this.settingUtils.get("share_link")
                     let content = await this.settingUtils.get("share_link")
-                    let title = await this.getDocTitle( await this.getActivePage())
+                    let title = await this.getDocTitle(await this.getActivePage())
                     let access_key_enable = await this.settingUtils.get("access_key_enable") as boolean
-                    console.log(access_key_enable)
+
                     if (access_key_enable) {
                         let access_key = await this.settingUtils.get("access_key") as string
-                        content=`通过思源笔记分享文档: ${title} 链接: ${share_link} 访问码: ${access_key}`
-                    }else{
-
-                        content=`通过思源笔记分享文档: ${title} 链接: ${share_link}`
+                        content = `${this.i18n.result_copy_desc_by}: ${title} ${this.i18n.result_copy_desc_link}: ${share_link} ${this.i18n.result_copy_desc_access}: ${access_key}`
+                    } else {
+                        content = `${this.i18n.result_copy_desc_by} ${title} ${this.i18n.result_copy_desc_link}: ${share_link}`
                     }
                     // navigator clipboard 需要https等安全上下文
                     if (navigator.clipboard && window.isSecureContext) {
@@ -341,7 +351,7 @@ export default class PluginSample extends Plugin {
                 }
             }
         });
-                
+
         // 按钮-服务器地址
         this.settingUtils.addItem({
             key: "address",
@@ -459,7 +469,7 @@ export default class PluginSample extends Plugin {
                     if (page_wide.endsWith("%")) {
                         let num = parseInt(page_wide)
                         if (num > 100 || num < 0) {
-                            pushErrMsg("请输入正确的百分比，如100%或者0%", 8000)
+                            pushErrMsg(this.i18n.result_intput_percentage)
                             this.settingUtils.set("page_wide", "800px")
                             return
                         }
@@ -467,12 +477,13 @@ export default class PluginSample extends Plugin {
                     } else if (page_wide.endsWith("px")) {
                         let num = parseInt(page_wide)
                         if (num < 0) {
-                            pushErrMsg("请输入正确的像素值，如800px", 8000)
+                        pushErrMsg(this.i18n.result_intput_pixel)
+
                             this.settingUtils.set("page_wide", "800px")
                             return
                         }
                     } else {
-                        pushErrMsg("请输入正确的格式，如800px或者100%", 8000)
+                        pushErrMsg(this.i18n.result_intput_percentage)
                         this.settingUtils.set("page_wide", "800px")
                         return
                     }
@@ -536,13 +547,13 @@ export default class PluginSample extends Plugin {
             title: this.i18n.hintTitle,
             description: this.i18n.hintDesc,
         });
+        this.lang = await this.getlang()
 
         console.debug(this.i18n.helloPlugin);
 
     }
 
     onLayoutReady() {
-        console.debug("加载插件")
         this.settingUtils.load();
     }
 
@@ -572,7 +583,29 @@ export default class PluginSample extends Plugin {
     //         target: dialog.element.querySelector("#SettingPanel"),
     //     });
     // }
+    async getlang() {
+        // 获取当前页的ID
+        const url = "api/system/getConf"
 
+        let data = "{}"
+
+        // 设置handle
+        let headers = {}
+        const access_code = this.settingUtils.get("access_code")
+        headers['Content-Type'] = 'application/json'
+        if (access_code != "") {
+            headers['Authorization'] = ' Token ' + access_code
+        }
+
+        return axios.post(url, data, headers)
+            .then(function (response) {
+                return String(response.data.data.conf.lang)
+            })
+            .catch(function (error) {
+                console.error(error);
+                return "en_US"
+            });
+    }
     async getsystemInfo() {
         // 获取当前页的ID
         const url = "api/system/getConf"
@@ -796,11 +829,12 @@ export default class PluginSample extends Plugin {
                 'Content-Type': 'application/json'
             };
         }
+        const i18n = this.i18n;
         return axios_plus.post(url, data, headers)
             .then(function (response) {
                 res_data = response.data
                 if (res_data.code == 0 && res_data.data.id == id) {
-                    console.debug("导出资源文件夹成功")
+                    console.debug(i18n.result_export_resources_ok)
                     return res_data.data.content
                 } else {
                     return ""
@@ -830,13 +864,15 @@ export default class PluginSample extends Plugin {
         const headers = {
             'Content-Type': 'application/json'
         }
+        const i18n = this.i18n;
+
         await axios.post("/api/export/exportResources", data, { headers })
             .then(function (response) {
                 if (response.data.code == 0) {
                     g.err = false
                 }
                 g.data = response.data.data.path
-                console.debug(`导出资源压缩包成功：${g.data}`)
+                console.debug(`${i18n.result_export_zip_ok}：${g.data}`)
             })
             .catch(function (error) {
                 g.data = error.message
@@ -876,6 +912,8 @@ export default class PluginSample extends Plugin {
             // 获取当前时间戳
             modTime: new Date().getTime(),
         }
+        const i18n = this.i18n;
+
         await axios.post("/api/file/putFile", data, { headers })
             .then(function (response) {
                 if (response.data.code == 0) {
@@ -884,12 +922,13 @@ export default class PluginSample extends Plugin {
                 g.data = data.path
             })
             .catch(function (error) {
-                console.error(`创建缓存目录${error}`)
+                console.error(`${i18n.result_create_tmp}:${error}`)
                 g.data = error.message
             })
         return g
     }
     async rmdir_temp_dir() {
+        const i18n = this.i18n;
 
         // 创建文件夹
         const data = {
@@ -899,10 +938,12 @@ export default class PluginSample extends Plugin {
             .then(function () {
             })
             .catch(function (error) {
-                console.error(`删除缓存目录${error}`)
+                console.error(`${i18n.result_rm_tmp}${error}`)
             })
     }
     async getFile(path) {
+        const i18n = this.i18n;
+
         let g: IFuncData = {
             err: true,
             data: ""
@@ -936,7 +977,7 @@ export default class PluginSample extends Plugin {
                 return g
             })
             .catch(function (error) {
-                console.error("获取文件", error)
+                console.error(i18n.result_get_file, error)
                 g.data = error.message
                 return g
 
@@ -945,6 +986,7 @@ export default class PluginSample extends Plugin {
     async uploadFile(serverAddress) {
         let appid = await this.getSystemID()
         let docid = await this.getActivePage()
+        const i18n = this.i18n;
 
 
         let g: IFuncData = {
@@ -995,7 +1037,7 @@ export default class PluginSample extends Plugin {
         return await axios.post(serverAddress, formData, { headers, timeout: 300000 })
             .then(function (response) {
                 let data: IRes = response.data
-                console.debug("上传文件", response.data)
+                console.debug(i18n.result_upload_file, response.data)
                 if (data.err == 0) {
                     g.err = false
                     g.data = content
@@ -1018,6 +1060,8 @@ export default class PluginSample extends Plugin {
     // 返回参数: IFuncData.err 表示请求是否成功
     // 返回参数: IFuncData.data 表示返回链接
     async uploadArgs(server_address: string, content: string) {
+        const i18n = this.i18n;
+
         let access_key = this.settingUtils.get("access_key") as string
 
         let docid = await this.getActivePage()
@@ -1035,7 +1079,7 @@ export default class PluginSample extends Plugin {
             access_key_enable: this.settingUtils.get("access_key_enable"),
             access_key: access_key.length != 0 ? access_key : "",
             mini_menu: this.settingUtils.get("mini_menu"),
-            title_image_height : this.settingUtils.get("title_image_height"),
+            title_image_height: this.settingUtils.get("title_image_height"),
         };
 
         let url = server_address + "/api/upload_args"
@@ -1059,7 +1103,7 @@ export default class PluginSample extends Plugin {
                 let data: IRes = response.data
                 g.err = false
                 g.data = data.data
-                console.debug("上传参数", data)
+                console.debug(i18n.result_upload_args, data)
                 if (data.err == 0) {
                     utils.enable("copy_link")
                     utils.enable("copy_link_full")
@@ -1091,26 +1135,53 @@ export default class PluginSample extends Plugin {
         let server_address = this.settingUtils.get("address");
         g = await this.uploadFile(server_address)
         if (g.err == true) {
-            pushErrMsg(g.data, 7000)
+            this.pushErrMsgLang(g.err)
             return g
         }
 
         g = await this.uploadArgs(server_address, g.data)
 
         if (g.err == true) {
-            pushErrMsg(g.data, 7000)
+            this.pushErrMsgLang(g.err)
             return
-        } 
+        }
 
         this.settingUtils.set("share_link", g.data)
         this.settingUtils.enable("delete_share",)
         this.settingUtils.enable("create_share")
         this.settingUtils.enable("access_key")
         this.settingUtils.enable("access_key_enable")
-        pushMsg("创建成功", 7000)
+
+        pushMsg(this.i18n.result_create_ok)
+        console.log(this.i18n.result_create_ok,"233")
 
     }
-
+    pushMsgLang(seq) {
+        switch (this.lang) {
+            case "zh_CN":
+                pushMsg(result[0][seq])
+                break
+            case "en_US":
+                pushMsg(result[1][seq])
+                break
+            default:
+                pushMsg(result[1][seq])
+                break
+        }
+    }
+    pushErrMsgLang(seq) {
+        switch (this.lang) {
+            case "zh_CN":
+                pushErrMsg(result[0][seq])
+                break
+            case "en_US":
+                pushErrMsg(result[1][seq])
+                break
+            default:
+                pushErrMsg(result[1][seq])
+                break
+        }
+    }
     // 功能: 获取分享链接
     // 返回: IFuncData结构体，包含err和data，
     // 返回参数: err 表示请求是否成功
@@ -1173,7 +1244,7 @@ export default class PluginSample extends Plugin {
                         break
                     default:
                         g.err = true
-                        pushErrMsg(g.data, 7000)
+                        this.pushErrMsgLang(g.err)
                         break
                 }
                 return g
@@ -1186,8 +1257,7 @@ export default class PluginSample extends Plugin {
                 return g
             })
         if (!ret) {
-            pushErrMsg("后台访问失败")
-            console.error("获取链接失败，停止获取访问密钥")
+            pushErrMsg(this.i18n.result_system_access_failed)
             return
         }
         this.access_key_get()
@@ -1199,6 +1269,7 @@ export default class PluginSample extends Plugin {
     // 返回: IFuncData结构体，包含err和data，
     // 返回参数: err 表示请求是否成功
     async deleteLink() {
+        const i18n = this.i18n;
         let g: IFuncData = {
             err: true,
             data: "",
@@ -1222,18 +1293,18 @@ export default class PluginSample extends Plugin {
         } else {
             headers['Content-Type'] = 'text/plain'
         }
-
+        
         return axios.post(url, data, { headers })
             .then(function (response) {
                 let data: IRes = response.data
-                console.debug("删除链接", data)
+                console.debug(i18n.result_delete_link, data)
                 if (data.err == 0 || data.err == 3) {
-                utils.disable("copy_link")
-                utils.disable("copy_link_full")
+                    utils.disable("copy_link")
+                    utils.disable("copy_link_full")
 
-                utils.disable("access_key")
-                utils.set("access_key","")
-                utils.set("access_key_enable",false)
+                    utils.disable("access_key")
+                    utils.set("access_key", "")
+                    utils.set("access_key_enable", false)
                     g.err = false
                 } else {
                     g.err = true
@@ -1253,6 +1324,7 @@ export default class PluginSample extends Plugin {
     // 返回: IFuncData结构体，包含err和data，
     // 返回参数: err 表示请求是否成功
     async access_key_enable() {
+        const i18n = this.i18n
         let g: IFuncData = {
             err: true,
             data: "",
@@ -1288,7 +1360,8 @@ export default class PluginSample extends Plugin {
             if (data.err == 0) {
                 g.err = false;
                 utils.set("access_key", data.data)
-                pushMsg("访问密钥已启动")
+                this.pushMsgLang(i18n.result_access_key_startup)
+
             } else {
                 g.err = true;
             }
@@ -1306,6 +1379,8 @@ export default class PluginSample extends Plugin {
     }
 
     async access_key_disable() {
+        const i18n = this.i18n
+
         let g: IFuncData = {
             err: true,
             data: "",
@@ -1340,7 +1415,7 @@ export default class PluginSample extends Plugin {
             // 根据你的逻辑处理响应数据
             if (data.err == 0 || data.err == 3) {
                 g.err = false;
-                pushMsg("访问密钥已关闭")
+                this.pushMsgLang(i18n.result_access_key_disable)
 
             } else {
                 g.err = true;
@@ -1362,7 +1437,7 @@ export default class PluginSample extends Plugin {
 
         utils.set("access_key_enable", false)
         utils.set("access_key", "")
-        
+
         let appid = await this.getSystemID()
         let docid = await this.getActivePage()
 
