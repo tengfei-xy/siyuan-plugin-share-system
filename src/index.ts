@@ -67,6 +67,7 @@ interface IUploadArgsReq {
     access_key_enable: boolean;
     mini_menu: boolean;
     title_image_height: string
+    custom_css: string
 }
 interface IGetLinkReq {
     appid: string;
@@ -507,6 +508,22 @@ export default class PluginSample extends Plugin {
                 }
             }
         });
+
+        // 文本框-导航菜单
+        this.settingUtils.addItem({
+            key: "custom_css",
+            value: "",
+            type: "textarea",
+            title: this.i18n.menu_custom_css_title,
+            description: this.i18n.menu_custom_css_desc,
+            action: {
+                callback: async () => {
+                    const new_value = this.settingUtils.take("custom_css")
+                    this.settingUtils.setAndSave("custom_css", new_value)
+                }
+            }
+        });
+        
         // 输入框-题头图高度
         this.settingUtils.addItem({
             key: "title_image_height",
@@ -1080,6 +1097,7 @@ export default class PluginSample extends Plugin {
             access_key: access_key.length != 0 ? access_key : "",
             mini_menu: this.settingUtils.get("mini_menu"),
             title_image_height: this.settingUtils.get("title_image_height"),
+            custom_css: this.settingUtils.take("custom_css"),
         };
 
         let url = server_address + "/api/upload_args"

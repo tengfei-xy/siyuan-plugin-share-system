@@ -48,6 +48,8 @@
     "menu_title_image_height_desc": "单位为CSS的vh（相对高度）。设置为0时，表示关闭；推荐30-50。页面不存在题头图，此参数无效。",
     "menu_page_wide_title": "页面宽度",
     "menu_page_wide_desc": "设定导出的页面宽度,支持两种单位px和%,比如800px或者90%",
+    "menu_custom_css_title": "自定义css",
+    "menu_custom_css_desc": "应用范围是这个应用，不仅仅是当前页面。如果输入为空，则不应用自定义css。",
     "err_upload": "上传失败,请从控制台查看或联系作者",
     "err_network": "网络错误",
     "msg_delete_link_ok": "删除成功",

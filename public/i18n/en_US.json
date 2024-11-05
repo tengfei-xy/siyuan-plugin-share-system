@@ -48,6 +48,8 @@
     "menu_title_image_height_desc": "The unit is CSS vh (relative height). When set to 0, it means closed; 30-50 is recommended. If there is no header image on the page, this parameter is invalid.",
     "menu_page_wide_title": "Page Width",
     "menu_page_wide_desc": "Set the exported page width, supporting two units: px and %, such as 800px or 90%",
+"menu_custom_css_title":"Custom CSS",
+"menu_custom_css_desc":"The application scope is this application, not just the current page. If the input is empty, no custom CSS is applied.",
     "err_upload": "Upload failed, please check from the console or contact the author",
     "err_network": "Network error, please check the network",
     "msg_get_link_ok": "Get link successfully",
