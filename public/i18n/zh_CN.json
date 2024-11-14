@@ -25,11 +25,13 @@
     "menu_delete_share_label": "删除链接",
     "menu_create_share_title": "创建/更新",
     "menu_create_share_label": "创建/更新链接",
+    "menu_create_share_desc": "对于已经分享地址，如果原页面有变化，请重新更新。变化的内容包括文字或主题样式。请勿多次重复点击此按钮。",
     "menu_copy_link_title": "复制链接",
     "menu_copy_link_desc": "仅链接",
     "menu_copy_link_full_title": "复制完整分享链接",
+    "menu_open_page_manager_title":"分享页面管理",
+    "menu_open_page_manager_desc":"仅能打开当前应用的分享列表并管理（删除，启用/禁用）",
     "menu_copy_link_full_desc": "包含文档标题、分享链接、访问码（如果有）",
-    "menu_create_share_desc": "对于已经分享地址，如果原页面有变化，请重新更新。变化的内容包括文字或主题样式。请勿多次重复点击此按钮。",
     "menu_access_code_title": "访问授权码",
     "menu_access_code_desc": "思源笔记的授权码。如果有，请填写。适用于在非客户端环境（比如非回环地址的网页端或者开启授权码的环境）调用，请从设置中获取",
     "menu_access_key_title": "访问密码",
@@ -76,5 +78,11 @@
     "result_get_file": "获取文件",
     "result_upload_file": "上传文件",
     "result_upload_args": "上传参数",
-    "result_delete_link": "删除链接"
+    "result_delete_link": "删除链接",
+    "result_choose":"请选择条目",
+    "pm_tbl_title_name": "名称",
+    "pm_tbl_title_access_key": "访问码",
+    "pm_btn_copy_link": "复制链接",
+    "pm_btn_copy_full_link": "复制完整链接",
+    "pm_btn_delete": "删除"
 }

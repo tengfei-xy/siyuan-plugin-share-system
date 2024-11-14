@@ -1,14 +1,11 @@
 import {
     Plugin,
     showMessage,
-    // Dialog,
-    Menu,
     getFrontend,
     Constants,
-    ICommandOption,
 } from "siyuan";
 import "@/index.scss";
-
+import { Dialog } from 'siyuan';
 import axios from 'axios';
 const axios_plus = axios.create({
     timeout: 10000,
@@ -40,6 +37,72 @@ interface IConfActivePage {
     height: string;
     instance: string;
     width: string;
+}
+interface PageManagerTableData {
+    link: string // 链接
+    title: string // 文档名
+    docid: string// 思源的页面ID
+    access_key: string // 状态码
+    access_key_enable: string // 状态码启用
+
+}
+class PageManagerHtml {
+    tbl_title_name: string
+    tbl_title_access_key: string
+    btn_copy_link: string
+    btn_copy_full_link: string
+    btn_delete: string
+    data: PageManagerTableData[]
+
+    html: string = ""
+    tbody: string
+
+    constructor(ld: string[],g: PageManagerTableData[]) {
+        this.tbl_title_name = ld[0]
+        this.tbl_title_access_key = ld[1]
+        this.btn_copy_link = ld[2]
+        this.btn_copy_full_link = ld[3]
+        this.btn_delete = ld[4]
+        this.data = g;
+    }
+
+
+    createTableHtml() {
+        this.tbody = ""
+        for (let i = 0; i < this.data.length; i++) {
+            this.tbody += `<tr data-idx=${i}>
+            <td>${this.data[i].title}</td>
+            <td>${this.data[i].access_key}</td>
+            </tr>`
+        }
+    }
+    createHtml() {
+        this.createTableHtml()
+
+        this.html = `
+            <div class="b3-dialog__content" style="width: 600px;height: 500px;">
+                <div class="table-container">
+                    <table id="dataTable" style="width: 100%;">
+                        <thead>
+                            <tr>
+                                <th>${this.tbl_title_name}</th>
+                                <th>${this.tbl_title_access_key}</th>
+                            </tr>
+                        </thead>
+                        <tbody id="tbl_body">
+                            ${this.tbody}
+                            </tbody>
+                    </table>
+                </div>
+                <div class="btn-group" style="text-align: center;">
+                    <button type="button" class="b3-button b3-button--outline b3-button--primary" id="btn_copy_link">${this.btn_copy_link}</button>
+                    <button type="button" class="b3-button b3-button--outline b3-button--primary" id="btn_copy_full_link">${this.btn_copy_full_link}</button>
+                    <button type="button" class="b3-button b3-button--outline b3-button--primary" id="btn_delete">${this.btn_delete}</button>
+                </div>
+            </div>
+        `;
+        return this.html;
+    }
 }
 interface exportHtmlData {
     content: string;
@@ -166,7 +229,7 @@ interface IFuncData {
 }
 
 const result: string[][] = [
-    ["处理完成","json解析错误","系统错误","此页面没有共享","错误请求地址"],
+    ["处理完成", "json解析错误", "系统错误", "此页面没有共享", "错误请求地址"],
     ["Processing completed", "json parsing error", "system error", "this page is not shared", "error request address"]
 ];
 export default class PluginSample extends Plugin {
@@ -180,7 +243,7 @@ export default class PluginSample extends Plugin {
 
     async onload() {
         const i18n = this.i18n
-        
+
         this.data[STORAGE_NAME] = { readonlyText: "Readonly" };
         console.debug("loading plugin-sample", this.i18n);
         // this.commands.
@@ -243,7 +306,6 @@ export default class PluginSample extends Plugin {
             }
         });
 
-
         // 按钮-删除分享
         this.settingUtils.addItem({
             key: "delete_share",
@@ -255,14 +317,20 @@ export default class PluginSample extends Plugin {
                 label: this.i18n.menu_delete_share_label,
                 callback: async () => {
                     let g = await this.deleteLink()
-                    if (g.err == false) {
-                        this.settingUtils.set("share_link", "");
-                        pushMsg(this.i18n.result_delete_ok)
-                        this.settingUtils.disable("delete_share")
-                        this.settingUtils.disable("access_key_enable")
-                    } else {
+                    if (g.err) {
                         this.pushErrMsgLang(g.err)
+                        return
                     }
+
+                    this.settingUtils.set("access_key", "")
+                    this.settingUtils.set("access_key_enable", false)
+                    this.settingUtils.set("share_link", "");
+                    this.settingUtils.disable("copy_link")
+                    this.settingUtils.disable("copy_link_full")
+                    this.settingUtils.disable("access_key")
+                    this.settingUtils.disable("delete_share")
+                    this.settingUtils.disable("access_key_enable")
+                    pushMsg(this.i18n.result_delete_ok)
 
                 }
             }
@@ -279,26 +347,7 @@ export default class PluginSample extends Plugin {
                 label: this.i18n.menu_copy_link_title,
                 callback: async () => {
                     let content = await this.settingUtils.get("share_link")
-                    // navigator clipboard 需要https等安全上下文
-                    if (navigator.clipboard && window.isSecureContext) {
-                        // navigator clipboard 向剪贴板写文本
-                        navigator.clipboard.writeText(content);
-                    } else {
-                        let textArea = document.createElement("textarea");
-                        textArea.value = content;
-                        // 使text area不在viewport，同时设置不可见
-                        textArea.style.position = "absolute";
-                        textArea.style.opacity = "0";
-                        textArea.style.left = "-999999px";
-                        textArea.style.top = "-999999px";
-                        document.body.appendChild(textArea);
-                        textArea.focus();
-                        textArea.select();
-                        document.execCommand('copy');
-                        textArea.remove();
-
-                    }
-
+                    this.copy_link(content)
                 }
             }
         });
@@ -324,31 +373,28 @@ export default class PluginSample extends Plugin {
                     } else {
                         content = `${this.i18n.result_copy_desc_by} ${title} ${this.i18n.result_copy_desc_link}: ${share_link}`
                     }
-                    // navigator clipboard 需要https等安全上下文
-                    if (navigator.clipboard && window.isSecureContext) {
-                        // navigator clipboard 向剪贴板写文本
-                        navigator.clipboard.writeText(content);
-                    } else {
-                        let textArea = document.createElement("textarea");
-                        textArea.value = content;
-                        // 使text area不在viewport，同时设置不可见
-                        textArea.style.position = "absolute";
-                        textArea.style.opacity = "0";
-                        textArea.style.left = "-999999px";
-                        textArea.style.top = "-999999px";
-                        document.body.appendChild(textArea);
-                        textArea.focus();
-                        textArea.select();
-                        document.execCommand('copy');
-                        textArea.remove();
 
-                    }
-
+                    this.copy_link(content)
                 }
             }
         });
 
-        // 按钮-服务器地址
+        // 按钮-打开分享页面管理
+        this.settingUtils.addItem({
+            key: "page_manager",
+            value: "",
+            type: "button",
+            title: this.i18n.menu_open_page_manager_title,
+            description: this.i18n.menu_open_page_manager_desc,
+            button: {
+                label: this.i18n.menu_open_page_manager_title,
+                callback: async () => {
+                    this.pageManager();
+                }
+            }
+        });
+
+        // 输入框-服务器地址
         this.settingUtils.addItem({
             key: "address",
             value: "http://124.223.15.220",
@@ -452,7 +498,7 @@ export default class PluginSample extends Plugin {
             }
         });
 
-        // 输入框-分享地址
+        // 输入框-页宽
         this.settingUtils.addItem({
             key: "page_wide",
             value: "800px",
@@ -473,7 +519,7 @@ export default class PluginSample extends Plugin {
                     } else if (page_wide.endsWith("px")) {
                         let num = parseInt(page_wide)
                         if (num < 0) {
-                        pushErrMsg(this.i18n.result_intput_pixel)
+                            pushErrMsg(this.i18n.result_intput_pixel)
 
                             this.settingUtils.set("page_wide", "800px")
                             return
@@ -518,7 +564,7 @@ export default class PluginSample extends Plugin {
                 }
             }
         });
-        
+
         // 输入框-题头图高度
         this.settingUtils.addItem({
             key: "title_image_height",
@@ -892,6 +938,92 @@ export default class PluginSample extends Plugin {
         return g
     }
 
+    async pageManager() {
+        let language: string[] = [this.i18n.pm_tbl_title_name,this.i18n.pm_tbl_title_access_key,this.i18n.pm_btn_copy_link,this.i18n.pm_btn_copy_full_link,this.i18n.pm_btn_delete]
+
+        let tableData = await this.getUrlList()
+        let pageData = new PageManagerHtml(language ,tableData);
+        const dialog = new Dialog({
+            title: this.i18n.menu_pag_manager_title,
+            content: pageData.createHtml(),
+        });
+
+        // 数据操作
+        const tr = dialog.element.querySelector('#tbl_body');
+        tr.addEventListener('click', (e) => {
+            // 将 e.target 转换为 Element 类型
+            const target = e.target as Element;
+
+            // 获取所有 tr 元素
+            const allTrs = tr.querySelectorAll('tr');
+
+            // 清空所有 tr 的背景颜色
+            allTrs.forEach(tr => {
+                tr.style.backgroundColor = '';
+                tr.closest('tr').dataset.selected = undefined;
+
+            });
+
+            // 将点击的 tr 设置为灰色
+            target.closest('tr').style.backgroundColor = '#dfdfdf';
+            target.closest('tr').dataset.selected = "true";
+        });
+
+
+        // 复制链接
+        dialog.element.querySelector('#btn_copy_link').addEventListener('click', () => {
+            const selectedRow = document.querySelector('tr[data-selected="true"]');
+            if (!selectedRow) {
+                pushErrMsg(this.i18n.result_choose)
+                return
+            }
+            let idx = selectedRow.getAttribute("data-idx")
+            let content = pageData.data[idx].link;
+            this.copy_link(content)
+
+        })
+        // 复制完整链接
+        dialog.element.querySelector('#btn_copy_full_link').addEventListener('click', () => {
+            const selectedRow = document.querySelector('tr[data-selected="true"]');
+            if (!selectedRow) {
+                pushErrMsg(this.i18n.result_choose)
+                return
+            }
+            let idx = selectedRow.getAttribute("data-idx")
+            let share_link = pageData.data[idx].link;
+            let title = pageData.data[idx].title;
+            let access_key_enable = pageData.data[idx].access_key_enable;
+            let content = `${this.i18n.result_copy_desc_by} ${title} ${this.i18n.result_copy_desc_link}: ${share_link}`
+
+            if (access_key_enable) {
+                let access_key = pageData.data[idx].access_key;
+                content = `${this.i18n.result_copy_desc_by}: ${title} ${this.i18n.result_copy_desc_link}: ${share_link} ${this.i18n.result_copy_desc_access}: ${access_key}`
+            }
+
+            this.copy_link(content)
+
+        })
+        // 删除
+        dialog.element.querySelector('#btn_delete').addEventListener('click',async () =>  {
+            const selectedRow = document.querySelector('tr[data-selected="true"]');
+            let idx = selectedRow.getAttribute("data-idx")
+            if (!selectedRow) {
+                pushErrMsg(this.i18n.result_choose)
+                return
+            }
+            let g = await this.deleteLink(pageData.data[idx].docid)
+            if (g.err) {
+                this.pushErrMsgLang(g.err)
+                return
+            }
+            
+            pageData.data.splice(Number(idx), 1);
+            const parentElement = selectedRow.parentNode;
+            parentElement.removeChild(selectedRow);
+        })
+
+
+    }
     // 获取绝对路径的缓存地址
     async get_temp_dir() {
         let savePath: string
@@ -1166,22 +1298,10 @@ export default class PluginSample extends Plugin {
         this.settingUtils.enable("access_key_enable")
 
         pushMsg(this.i18n.result_create_ok)
-        console.log(this.i18n.result_create_ok,"233")
+        console.log(this.i18n.result_create_ok, "233")
 
     }
-    pushMsgLang(seq) {
-        switch (this.lang) {
-            case "zh_CN":
-                pushMsg(result[0][seq])
-                break
-            case "en_US":
-                pushMsg(result[1][seq])
-                break
-            default:
-                pushMsg(result[1][seq])
-                break
-        }
-    }
+
     pushErrMsgLang(seq) {
         switch (this.lang) {
             case "zh_CN":
@@ -1281,17 +1401,18 @@ export default class PluginSample extends Plugin {
     // 功能: 删除分享链接
     // 返回: IFuncData结构体，包含err和data，
     // 返回参数: err 表示请求是否成功
-    async deleteLink() {
+    async deleteLink(docid?: string) {
         const i18n = this.i18n;
         let g: IFuncData = {
             err: true,
             data: "",
         }
 
+        docid = docid ?? await this.getActivePage()
 
         const data: IGetLinkReq = {
             appid: await this.getSystemID(),
-            docid: await this.getActivePage(),
+            docid: docid,
             plugin_version: this.plugin_version
 
         };
@@ -1306,18 +1427,12 @@ export default class PluginSample extends Plugin {
         } else {
             headers['Content-Type'] = 'text/plain'
         }
-        
+
         return axios.post(url, data, { headers })
             .then(function (response) {
                 let data: IRes = response.data
                 console.debug(i18n.result_delete_link, data)
                 if (data.err == 0 || data.err == 3) {
-                    utils.disable("copy_link")
-                    utils.disable("copy_link_full")
-
-                    utils.disable("access_key")
-                    utils.set("access_key", "")
-                    utils.set("access_key_enable", false)
                     g.err = false
                 } else {
                     g.err = true
@@ -1381,7 +1496,7 @@ export default class PluginSample extends Plugin {
             g.data = data.data;
 
             return g;
-        })
+        }.bind(this))
             .catch(function (error) {
                 console.error(error);
                 // 处理错误
@@ -1436,7 +1551,7 @@ export default class PluginSample extends Plugin {
             g.data = data.data;
 
             return g;
-        })
+        }.bind(this))
             .catch(function (error) {
                 console.error(error);
                 // 处理错误
@@ -1486,5 +1601,54 @@ export default class PluginSample extends Plugin {
                 return;
             });
 
+    }
+    copy_link(content: string) {
+        // navigator clipboard 需要https等安全上下文
+        if (navigator.clipboard && window.isSecureContext) {
+            // navigator clipboard 向剪贴板写文本
+            navigator.clipboard.writeText(content);
+        } else {
+            let textArea = document.createElement("textarea");
+            textArea.value = content;
+            // 使text area不在viewport，同时设置不可见
+            textArea.style.position = "absolute";
+            textArea.style.opacity = "0";
+            textArea.style.left = "-999999px";
+            textArea.style.top = "-999999px";
+            document.body.appendChild(textArea);
+            textArea.focus();
+            textArea.select();
+            document.execCommand('copy');
+            textArea.remove();
+        }
+    }
+    async getUrlList() {
+        let appid = await this.getSystemID();
+        let server_address = this.settingUtils.get("address");
+        const url = server_address + "/api/getlinkall?appid=" + appid
+
+        let headers = {}
+        const utils = this.settingUtils
+        const enable_browser = utils.get("enable_browser")
+        if (enable_browser) {
+            headers['Content-Type'] = 'application/json'
+            headers['cros-status'] = enable_browser
+        } else {
+            headers['Content-Type'] = 'text/plain'
+        }
+
+        let ret: PageManagerTableData[]
+        ret = await axios.get(url, { headers })
+            .then(function (response) {
+                let data: PageManagerTableData[] = response.data.data
+                return data
+            })
+            .catch(function (error) {
+                console.error(error)
+                pushErrMsg(error)
+                return ret
+            })
+
+        return ret
     }
 }
