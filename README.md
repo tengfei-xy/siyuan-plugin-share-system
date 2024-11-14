@@ -24,6 +24,7 @@ Export html files and other resource files and upload them to the server. The se
 
 # Version description
 
+- v2.2.0: Support sharing page management, modify icons, add custom css options, support English prompt output
 - v2.1.0: Supports setting the height of the header image on the sharing page, adjusting button logic, and supports using the navigation menu on the sharing page to locate the title
 - v2.0.0: Support one-click copy address, share page supports access password
 - v1.3.0: Support docker as backend
