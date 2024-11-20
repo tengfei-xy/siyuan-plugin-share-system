@@ -57,7 +57,7 @@ class PageManagerHtml {
     html: string = ""
     tbody: string
 
-    constructor(ld: string[],g: PageManagerTableData[]) {
+    constructor(ld: string[], g: PageManagerTableData[]) {
         this.tbl_title_name = ld[0]
         this.tbl_title_access_key = ld[1]
         this.btn_copy_link = ld[2]
@@ -568,14 +568,27 @@ export default class PluginSample extends Plugin {
         // 输入框-题头图高度
         this.settingUtils.addItem({
             key: "title_image_height",
-            value: "30",
+            value: 30,
             type: "textinput",
             title: this.i18n.menu_title_image_height_title,
             description: this.i18n.menu_title_image_height_desc,
             action: {
                 callback: async () => {
-                    const new_value = !this.settingUtils.get("title_image_height")
-                    this.settingUtils.set("title_image_height", new_value)
+                    let value = this.settingUtils.get("title_image_height")
+                    if (typeof value === 'string') {
+                        value = parseInt(value);
+                        if (isNaN(value) || value < 0) {
+                            value = 30;
+                        }
+                    } else if (typeof value === 'number') {
+                        if (value < 0) {
+                            value = 30;
+                        }
+                    } else {
+                        value = 30;
+                    }
+
+                    this.settingUtils.set("title_image_height", value)
                     this.settingUtils.save()
                 }
             }
@@ -939,10 +952,10 @@ export default class PluginSample extends Plugin {
     }
 
     async pageManager() {
-        let language: string[] = [this.i18n.pm_tbl_title_name,this.i18n.pm_tbl_title_access_key,this.i18n.pm_btn_copy_link,this.i18n.pm_btn_copy_full_link,this.i18n.pm_btn_delete]
+        let language: string[] = [this.i18n.pm_tbl_title_name, this.i18n.pm_tbl_title_access_key, this.i18n.pm_btn_copy_link, this.i18n.pm_btn_copy_full_link, this.i18n.pm_btn_delete]
 
         let tableData = await this.getUrlList()
-        let pageData = new PageManagerHtml(language ,tableData);
+        let pageData = new PageManagerHtml(language, tableData);
         const dialog = new Dialog({
             title: this.i18n.menu_pag_manager_title,
             content: pageData.createHtml(),
@@ -1004,7 +1017,7 @@ export default class PluginSample extends Plugin {
 
         })
         // 删除
-        dialog.element.querySelector('#btn_delete').addEventListener('click',async () =>  {
+        dialog.element.querySelector('#btn_delete').addEventListener('click', async () => {
             const selectedRow = document.querySelector('tr[data-selected="true"]');
             let idx = selectedRow.getAttribute("data-idx")
             if (!selectedRow) {
@@ -1016,7 +1029,7 @@ export default class PluginSample extends Plugin {
                 this.pushErrMsgLang(g.err)
                 return
             }
-            
+
             pageData.data.splice(Number(idx), 1);
             const parentElement = selectedRow.parentNode;
             parentElement.removeChild(selectedRow);
@@ -1488,7 +1501,7 @@ export default class PluginSample extends Plugin {
             if (data.err == 0) {
                 g.err = false;
                 utils.set("access_key", data.data)
-                this.pushMsgLang(i18n.result_access_key_startup)
+                pushMsg(i18n.result_access_key_startup)
 
             } else {
                 g.err = true;
@@ -1543,7 +1556,7 @@ export default class PluginSample extends Plugin {
             // 根据你的逻辑处理响应数据
             if (data.err == 0 || data.err == 3) {
                 g.err = false;
-                this.pushMsgLang(i18n.result_access_key_disable)
+                pushMsg(i18n.result_access_key_disable)
 
             } else {
                 g.err = true;
