@@ -24,6 +24,7 @@ Export html files and other resource files and upload them to the server. The se
 
 # Version description
 
+- v2.3.1: No update, new version
 - v2.3.0: Use new long-term supported sharing server (support HTTPS), fix bugs, modify text description
 - v2.2.1: Bug fixes
 - v2.2.0: Support sharing page management, modify icons, add custom css options, support English prompt output
