@@ -16,10 +16,10 @@
         "makesure": "Before using this template, please read the <a href=\"https://github.com/siyuan-note/plugin-sample\">official tutorial</a> to make sure you understand the plug-in. Basic development process."
     },
     "hintTitle": "About",
-    "hintDesc": "1. Applicable scenarios: documents need to be published to the public network.<br>2. Release nature: static documents (will not change with the changes of Siyuan Notes documents)<br>3. Version nature: stable version<br>4. Support front-end: desktop, desktop browser<br>5. Support back-end: macos, windows, linux, docker<br>6. Open source address: <a href='https: //github.com/tengfei-xy/siyuan-plugin-share-system' >plug-in</a>, <a href='https: //github.com/tengfei-xy/siyuan-plugin-share-system-engine' >server</a> (supports docker one-click building)<br>7. For the setting items \"Regenerate link\", \"Page width\", \"Navigation menu\", \"Header image height\", they are only saved locally, and these parameters will not be saved to the server. They will only take effect for the next time you share the document.<br>8. WeChat: uBpHJlVdn5k15G3dhLh1, QQ: 1765552388<br>9. Cache directory location: Siyuan data folder/tmp/plugin/share-note (Note: clean up once before each export)<br>",
+    "hintDesc": "If you like this plugin, you can click a star or give a reward on <a href='https://github.com/tengfei-xy/siyuan-plugin-share-system' >github</a> <br>1. Applicable scenarios: documents need to be published to the public network. <br>2. Release nature: static documents (will not change with the changes of Siyuan Notes documents) <br>3. Version nature: stable version <br>4. Support front-end: desktop, desktop browser <br>5. Support back-end: macos, windows, linux, docker <br>6. Open source address: <a href='https://github.com/tengfei-xy/siyuan-plugin-share-system' >plug-in</a>, <a href='https: //github.com/tengfei-xy/siyuan-plugin-share-system-engine' >Server</a> (supports docker one-click building)<br>7. The settings of \"Regenerate Link\", \"Page Width\", \"Navigation Menu\", and \"Header Image Height\" are only saved locally, and these parameters will not be saved to the server. They will only take effect for the next time you share the document. <br>8. WeChat: uBpHJlVdn5k15G3dhLh1 <br>9. Cache directory location: Siyuan Data Folder/tmp/plugin/share-note (Note: Clean up once before each export)<br>10. When you choose to switch from the old public server (http://124.223.15.220) to the new public service (https://share.acre.red:25934), the historical shared pages will not be retained, and you need to share them again. ",
     "menu_share_link_title": "Share address",
     "menu_address_title": "Share the background address of the system server",
-    "menu_address_desc": "The default is http://124.223.15.220, which supports docker construction.",
+    "menu_address_desc": "The default value is https://share.acer.red:25934, which supports docker one-click build",
     "menu_delete_share_title": "Delete",
     "menu_delete_share_desc": "Delete the shared link and the resource file corresponding to the link.",
     "menu_delete_share_label": "Delete links and resource files",
@@ -38,7 +38,7 @@
     "menu_access_key_title_desc": "The access_key required by the browser to access the shared page. After the access key is activated, it will be randomly generated.",
     "menu_access_key_enable_title": "Startup access access_key",
     "menu_access_key_enable_title_desc": "This feature is disabled when this page is not shared.",
-    "menu_enable_browser_title": "Enable browser access",
+    "menu_enable_browser_title": "Enable access from browser / Allow cross-domain",
     "menu_enable_browser_desc": "After enabling, you can use the plugin in the browser",
     "menu_exist_link_create_title": "Regenerate link",
     "menu_exist_link_create_desc": "When the link already exists, whether to regenerate the link when uploading the article",
@@ -51,7 +51,7 @@
     "menu_page_wide_title": "Page Width",
     "menu_page_wide_desc": "Set the exported page width, supporting two units: px and %, such as 800px or 90%",
     "menu_custom_css_title": "Custom CSS",
-    "menu_custom_css_desc": "The application scope is this application, not just the current page. If the input is empty, no custom CSS is applied.",
+    "menu_custom_css_desc": "The application scope is this application, not just the current page. If the input is empty, no custom CSS is applied. Fill in the example body{...}",
     "err_upload": "Upload failed, please check from the console or contact the author",
     "err_network": "Network error, please check the network",
     "msg_get_link_ok": "Get link successfully",
@@ -84,5 +84,6 @@
     "pm_tbl_title_access_key": "Access code",
     "pm_btn_copy_link": "Copy link",
     "pm_btn_copy_full_link": "Copy full link",
-    "pm_btn_delete": "Delete"
+    "pm_btn_delete": "Delete",
+    "new_server":"The public server currently used by this plugin is http://124.223.15.220. This server will be discontinued on January 6, 2025. The plugin author currently provides a new, free server address (https://share.acre.red:25934). It is recommended that you use the new server address in the plugin settings."
 }

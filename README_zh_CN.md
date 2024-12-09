@@ -1,4 +1,4 @@
-# 思源笔记的分享笔记工具v2.0
+# 思源笔记的分享笔记工具v2
 
 [English](./README.md)
 
@@ -12,7 +12,7 @@
 # 注意
 
 1. 本插件[目前版本](https://github.com/tengfei-xy/siyuan-plugin-share-system/releases)属于稳定版，欢迎大家提交问题
-2. 目前使用的[公网服务器](https://github.com/tengfei-xy/siyuan-plugin-share-system-engine)是作者提供的，欢迎有动手能力的小伙伴通过[docker自行搭建](https://github.com/tengfei-xy/siyuan-plugin-share-system-engine)
+2. 目前插件使用的[服务器](https://github.com/tengfei-xy/siyuan-plugin-share-system-engine)是作者提供的，欢迎有动手能力的小伙伴通过[docker自行搭建](https://github.com/tengfei-xy/siyuan-plugin-share-system-engine)
 3. 链接目前是无过期时间的，链接的内容不会随笔记删除而删除。
 4. 调试时，请在开发者工具/控制台调整为“所有级别”的日志等级。
 5. 插件v1.3.0版本及之前需要对应服务器端版本v1.3.2；**插件版本v2.0之后，需要对应服务器端v2.0。**
@@ -24,6 +24,7 @@
 
 # 版本说明
 
+- v2.3.0：使用新的长期支持的分享服务器（支持HTTPS），错误修复，修改文字说明
 - v2.2.1：修复错误
 - v2.2.0：支持分享页面管理、修改图标、添加自定义css选项、支持英语的提示输出
 - v2.1.0：支持分享页面的题头图的高度设置、按钮逻辑调整、支持分享页面使用导航菜单以定位标题

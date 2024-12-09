@@ -16,10 +16,10 @@
         "makesure": "使用这个模板之前，请阅读<a href=\"https://github.com/siyuan-note/plugin-sample\">官方教程</a>, 确保自己已经理解了插件的基本开发流程。"
     },
     "hintTitle": "关于",
-    "hintDesc": "1. 适用场景：需要公开发布文档到公共网络。<br>2. 发布性质：静态文档（不会随着思源笔记的文档变化而变化）<br>3. 版本性质: 稳定版<br>4. 支持前端: 桌面端、桌面浏览器端<br>5. 支持后台: macos、windows、linux、docker<br>6. 开源地址：<a href='https: //github.com/tengfei-xy/siyuan-plugin-share-system' >插件</a>、<a href='https: //github.com/tengfei-xy/siyuan-plugin-share-system-engine' >服务器</a>（支持docker一键搭建）<br>7.对于设置项“重新生成链接“、“页面宽度”、“导航菜单”、“题头图高度”是仅保存于本地，不会保存这些参数到服务端，仅对下一次分享文档生效。<br>8. 微信: uBpHJlVdn5k15G3dhLh1 ，QQ: 1765552388<br>9. 缓存目录位置: 思源数据文件夹/tmp/plugin/share-note (注：每次导出前均执行清理一次)<br>",
+    "hintDesc": "如果您喜欢这个插件，可以在<a href='https://github.com/tengfei-xy/siyuan-plugin-share-system' >github</a>点个star或<a href='https://afdian.com/a/tengfei-xy' >打赏</a> <br>1. 适用场景：需要公开发布文档到公共网络。<br>2. 发布性质：静态文档（不会随着思源笔记的文档变化而变化）<br>3. 版本性质: 稳定版<br>4. 支持前端: 桌面端、桌面浏览器端<br>5. 支持后台: macos、windows、linux、docker<br>6. 开源地址：<a href='https://github.com/tengfei-xy/siyuan-plugin-share-system' >插件</a>、<a href='https: //github.com/tengfei-xy/siyuan-plugin-share-system-engine' >服务器</a>（支持docker一键搭建）<br>7.对于设置项“重新生成链接“、“页面宽度”、“导航菜单”、“题头图高度”是仅保存于本地，不会保存这些参数到服务端，仅对下一次分享文档生效。<br>8. 微信: uBpHJlVdn5k15G3dhLh1 <br>9. 缓存目录位置: 思源数据文件夹/tmp/plugin/share-note (注：每次导出前均执行清理一次)<br>10.当您选择从旧的公共服务器(http://124.223.15.220)换新到新的公共服务时（https://share.acre.red:25934），历史分享的页面将不会留存，您需要重新分享。",
     "menu_share_link_title": "分享地址",
     "menu_address_title": "分享系统服务器的后台地址",
-    "menu_address_desc": "默认为http://124.223.15.220,支持docker一键搭建",
+    "menu_address_desc": "默认为https://share.acer.red:25934 ，支持docker一键搭建",
     "menu_delete_share_title": "删除",
     "menu_delete_share_desc": "删除链接和资源文件",
     "menu_delete_share_label": "删除链接",
@@ -38,7 +38,7 @@
     "menu_access_key_desc": "浏览器访问被分享的页面所需要的密码。在启动访问密钥后,将随机生成",
     "menu_access_key_enable_title": "启动访问密码",
     "menu_access_key_enable_title_desc": "当本页面未被共享时，此功能禁用。",
-    "menu_enable_browser_title": "启用从浏览器访问",
+    "menu_enable_browser_title": "启用从浏览器访问 / 允许跨域",
     "menu_enable_browser_desc": "启用后，可以在浏览器中使用插件",
     "menu_exist_link_create_title": "重新生成链接",
     "menu_exist_link_create_desc": "当链接已存在时，上传文章时，是否重新生成链接",
@@ -51,7 +51,7 @@
     "menu_page_wide_title": "页面宽度",
     "menu_page_wide_desc": "设定导出的页面宽度,支持两种单位px和%,比如800px或者90%",
     "menu_custom_css_title": "自定义css",
-    "menu_custom_css_desc": "应用范围是这个应用，不仅仅是当前页面。如果输入为空，则不应用自定义css。",
+    "menu_custom_css_desc": "应用范围是这个应用，不仅仅是当前页面。如果输入为空，则不应用自定义css。填写示例body{...}",
     "err_upload": "上传失败,请从控制台查看或联系作者",
     "err_network": "网络错误",
     "msg_delete_link_ok": "删除成功",
@@ -84,5 +84,6 @@
     "pm_tbl_title_access_key": "访问码",
     "pm_btn_copy_link": "复制链接",
     "pm_btn_copy_full_link": "复制完整链接",
-    "pm_btn_delete": "删除"
+    "pm_btn_delete": "删除",
+    "new_server":"当前本插件使用的公共服务器是http://124.223.15.220。此服务器于2025年1月6日停止使用。目前插件作者提供了新的、免费的服务器地址（ https://share.acre.red:25934）。建议您在插件设置中使用新的服务器地址。"
 }

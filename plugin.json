@@ -2,7 +2,7 @@
   "name": "siyuan-plugin-share-tool",
   "author": "tengfei-xy",
   "url": "https://github.com/tengfei-xy/siyuan-plugin-share-system",
-  "version": "2.2.1",
+  "version": "2.3.0",
   "minAppVersion": "3.0.0",
   "backends": [
     "windows",
@@ -32,7 +32,7 @@
   },
   "funding": {
     "custom": [
-      "https://afdian.net/a/tengfei-xy"
+      "https://afdian.com/a/tengfei-xy"
     ]
   },
   "keywords": [

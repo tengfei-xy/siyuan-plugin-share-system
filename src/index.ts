@@ -234,21 +234,15 @@ const result: string[][] = [
 ];
 export default class PluginSample extends Plugin {
 
-    // private isMobile: boolean;
-    private plugin_version: string = "2.0.0";
+    private plugin_version: string = "2.3.0";
     settingUtils: SettingUtils;
     private lang: string;
-
-
 
     async onload() {
         const i18n = this.i18n
 
         this.data[STORAGE_NAME] = { readonlyText: "Readonly" };
         console.debug("loading plugin-sample", this.i18n);
-        // this.commands.
-        // const frontEnd = getFrontend();
-        // this.isMobile = frontEnd === "mobile" || frontEnd === "browser-mobile";
 
         this.addIcons(`<symbol id="iconFace" viewBox="0 0 1024 1024">
         <g>
@@ -397,13 +391,18 @@ export default class PluginSample extends Plugin {
         // 输入框-服务器地址
         this.settingUtils.addItem({
             key: "address",
-            value: "http://124.223.15.220",
+            value: "https://share.acer.red:25934",
             type: "textinput",
             title: this.i18n.menu_address_title,
             description: this.i18n.menu_address_desc,
             action: {
                 callback: async () => {
-                    this.settingUtils.takeAndSave("address")
+                    let address :string = this.settingUtils.take("address");
+                    if (address.endsWith(" ")){
+                        this.settingUtils.set("address",address.trimEnd());
+                    }
+                    this.settingUtils.save();
+                    
                 }
             }
         });
@@ -422,21 +421,6 @@ export default class PluginSample extends Plugin {
             }
 
         });
-        // 输入框-访问密码
-        this.settingUtils.addItem({
-            key: "access_key",
-            value: "",
-            type: "textinput",
-            title: this.i18n.menu_access_key_title,
-            description: this.i18n.menu_access_key_desc,
-            action: {
-                callback: async () => {
-                    this.settingUtils.takeAndSave("access_key")
-                }
-            }
-
-        });
-
         // 按钮-启动访问密码
         this.settingUtils.addItem({
             key: "access_key_enable",
@@ -463,6 +447,21 @@ export default class PluginSample extends Plugin {
 
                 }
             }
+        });
+
+        // 输入框-访问密码
+        this.settingUtils.addItem({
+            key: "access_key",
+            value: "",
+            type: "textinput",
+            title: this.i18n.menu_access_key_title,
+            description: this.i18n.menu_access_key_desc,
+            action: {
+                callback: async () => {
+                    this.settingUtils.takeAndSave("access_key")
+                }
+            }
+
         });
 
         // 复选框-启用浏览器
@@ -574,7 +573,8 @@ export default class PluginSample extends Plugin {
             description: this.i18n.menu_title_image_height_desc,
             action: {
                 callback: async () => {
-                    let value = this.settingUtils.get("title_image_height")
+                    let value = this.settingUtils.take("title_image_height")
+
                     if (typeof value === 'string') {
                         value = parseInt(value);
                         if (isNaN(value) || value < 0) {
@@ -587,7 +587,6 @@ export default class PluginSample extends Plugin {
                     } else {
                         value = 30;
                     }
-
                     this.settingUtils.set("title_image_height", value)
                     this.settingUtils.save()
                 }
@@ -624,8 +623,8 @@ export default class PluginSample extends Plugin {
 
     }
 
-    onLayoutReady() {
-        this.settingUtils.load();
+    async onLayoutReady() {
+        await this.settingUtils.load();
     }
 
     async onunload() {
@@ -639,21 +638,6 @@ export default class PluginSample extends Plugin {
     uninstall() {
         console.debug("uninstall");
     }
-    // openDIYSetting(): void {
-    //     let dialog = new Dialog({
-    //         title: "SettingPannel",
-    //         content: `<div id="SettingPanel" style="height: 100%;"></div>`,
-    //         width: "600px",
-    //         destroyCallback: (options) => {
-    //             console.log("destroyCallback", options);
-    //             //You'd better destroy the component when the dialog is closed
-    //             pannel.$destroy();
-    //         }
-    //     });
-    //     let pannel = new SettingExample({
-    //         target: dialog.element.querySelector("#SettingPanel"),
-    //     });
-    // }
     async getlang() {
         // 获取当前页的ID
         const url = "api/system/getConf"
@@ -1328,11 +1312,14 @@ export default class PluginSample extends Plugin {
                 break
         }
     }
+
     // 功能: 获取分享链接
     // 返回: IFuncData结构体，包含err和data，
     // 返回参数: err 表示请求是否成功
     // 返回参数: data 表示返回链接
     async getLink() {
+        this.prompt_new_server();
+
         let g: IFuncData = {
             err: true,
             data: ""
@@ -1365,9 +1352,8 @@ export default class PluginSample extends Plugin {
         utils.disable("access_key")
 
 
-
         let ret = false
-        await axios.post(url, data, { headers, timeout: 3000 })
+        await axios.post(url, data, { headers, timeout: 30000 })
             .then(function (response) {
                 let data: IRes = response.data
                 switch (data.err) {
@@ -1663,5 +1649,12 @@ export default class PluginSample extends Plugin {
             })
 
         return ret
+    }
+    prompt_new_server() {
+        let server_address: string = this.settingUtils.take("address");
+        if (!server_address.startsWith("http://124.223.15.220")) {
+            return;
+        }
+        pushMsg(this.i18n.new_server, 30000)
     }
 }
