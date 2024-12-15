@@ -23,7 +23,7 @@
 Export html files and other resource files and upload them to the server. The server will also generate the corresponding index.htm as the homepage.
 
 # Version description
-
+- v2.3.2: Fixed the issue that the icon is invisible in dark colors
 - v2.3.1: No update, new version
 - v2.3.0: Use new long-term supported sharing server (support HTTPS), fix bugs, modify text description
 - v2.2.1: Bug fixes
