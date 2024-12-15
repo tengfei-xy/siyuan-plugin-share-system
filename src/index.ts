@@ -244,15 +244,15 @@ export default class PluginSample extends Plugin {
         this.data[STORAGE_NAME] = { readonlyText: "Readonly" };
         console.debug("loading plugin-sample", this.i18n);
 
-        this.addIcons(`<symbol id="iconFace" viewBox="0 0 1024 1024">
+        this.addIcons(`<symbol id="iconShareSystem" viewBox="0 0 1024 1024">
         <g>
-<path d="M220.525714 521.508571m-180.845714 0a180.845714 180.845714 0 1 0 361.691429 0 180.845714 180.845714 0 1 0-361.691429 0Z" fill="#333333" p-id="6573"></path><path d="M751.36 883.2m-140.8 0a140.8 140.8 0 1 0 281.6 0 140.8 140.8 0 1 0-281.6 0Z" fill="#333333" p-id="6574"></path><path d="M843.702857 140.8m-140.8 0a140.8 140.8 0 1 0 281.6 0 140.8 140.8 0 1 0-281.6 0Z" fill="#333333" p-id="6575"></path><path d="M282.477714 654.939429l40.228572-69.668572L711.314286 809.618286l-40.228572 69.668571zM293.485714 419.675429L731.666286 166.692571l40.228571 69.668572L333.714286 489.380571z" fill="#333333" p-id="6576"></path>
+<path d="M220.525714 521.508571m-180.845714 0a180.845714 180.845714 0 1 0 361.691429 0 180.845714 180.845714 0 1 0-361.691429 0Z" fill="#333333" p-id="6573"></path><path d="M751.36 883.2m-140.8 0a140.8 140.8 0 1 0 281.6 0 140.8 140.8 0 1 0-281.6 0Z" fill="currentColor" p-id="6574"></path><path d="M843.702857 140.8m-140.8 0a140.8 140.8 0 1 0 281.6 0 140.8 140.8 0 1 0-281.6 0Z" fill="currentColor" p-id="6575"></path><path d="M282.477714 654.939429l40.228572-69.668572L711.314286 809.618286l-40.228572 69.668571zM293.485714 419.675429L731.666286 166.692571l40.228571 69.668572L333.714286 489.380571z" fill="currentColor" p-id="6576"></path>
        </g>
        `);
 
         // 添加顶部菜单
         this.addTopBar({
-            icon: "iconFace",
+            icon: "iconShareSystem",
             title: this.i18n.topBarTitle,
             position: "right",
             callback: async () => {
@@ -397,12 +397,12 @@ export default class PluginSample extends Plugin {
             description: this.i18n.menu_address_desc,
             action: {
                 callback: async () => {
-                    let address :string = this.settingUtils.take("address");
-                    if (address.endsWith(" ")){
-                        this.settingUtils.set("address",address.trimEnd());
+                    let address: string = this.settingUtils.take("address");
+                    if (address.endsWith(" ")) {
+                        this.settingUtils.set("address", address.trimEnd());
                     }
                     this.settingUtils.save();
-                    
+
                 }
             }
         });
