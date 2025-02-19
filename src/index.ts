@@ -618,6 +618,15 @@ export default class PluginSample extends Plugin {
             description: this.i18n.hintDesc,
         });
         this.lang = await this.getlang()
+        const frontEnd = getFrontend();
+        if ((frontEnd === "browser-mobile" || frontEnd === "browser-desktop") && (1)){
+            if (window.location.protocol=="https:"){
+                let address = this.settingUtils.take("address")
+                if (address.startsWith("http:")) {
+                   pushErrMsg("浏览器使用https访问时，分享插件服务器的地址请使用https,而不是http")
+                }
+            }
+        }
 
         console.debug(this.i18n.helloPlugin);
 
