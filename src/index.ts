@@ -44,35 +44,47 @@ interface PageManagerTableData {
     docid: string// 思源的页面ID
     access_key: string // 状态码
     access_key_enable: string // 状态码启用
+    is_home_page: boolean // 是否为首页
 
 }
 class PageManagerHtml {
     tbl_title_name: string
     tbl_title_access_key: string
+    tbl_title_home_page: string
     btn_copy_link: string
     btn_copy_full_link: string
     btn_delete: string
+    btn_home_page: string
+    prompt_yes: string
     data: PageManagerTableData[]
 
     html: string = ""
     tbody: string
-
     constructor(ld: string[], g: PageManagerTableData[]) {
         this.tbl_title_name = ld[0]
         this.tbl_title_access_key = ld[1]
-        this.btn_copy_link = ld[2]
-        this.btn_copy_full_link = ld[3]
-        this.btn_delete = ld[4]
+        this.tbl_title_home_page = ld[2]
+        this.btn_copy_link = ld[3]
+        this.btn_copy_full_link = ld[4]
+        this.btn_delete = ld[5]
+        this.btn_home_page = ld[6]
+        this.prompt_yes = ld[7]
         this.data = g;
     }
 
 
     createTableHtml() {
+
         this.tbody = ""
         for (let i = 0; i < this.data.length; i++) {
+            let homepage = ""
+            if (this.data[i].is_home_page) {
+                homepage = this.prompt_yes
+            }   
             this.tbody += `<tr data-idx=${i}>
-            <td>${this.data[i].title}</td>
-            <td>${this.data[i].access_key}</td>
+            <td style="border: 1px solid #ddd; padding: 8px;">${this.data[i].title}</td>
+            <td style="border: 1px solid #ddd; padding: 8px;text-align: center;">${this.data[i].access_key}</td>
+            <td style="border: 1px solid #ddd; padding: 8px;text-align: center;">${homepage}</td>
             </tr>`
         }
     }
@@ -81,24 +93,26 @@ class PageManagerHtml {
 
         this.html = `
             <div class="b3-dialog__content" style="width: 600px;height: 500px;">
-                <div class="table-container">
-                    <table id="dataTable" style="width: 100%;">
-                        <thead>
-                            <tr>
-                                <th>${this.tbl_title_name}</th>
-                                <th>${this.tbl_title_access_key}</th>
-                            </tr>
-                        </thead>
-                        <tbody id="tbl_body">
-                            ${this.tbody}
-                            </tbody>
-                    </table>
-                </div>
-                <div class="btn-group" style="text-align: center;">
-                    <button type="button" class="b3-button b3-button--outline b3-button--primary" id="btn_copy_link">${this.btn_copy_link}</button>
-                    <button type="button" class="b3-button b3-button--outline b3-button--primary" id="btn_copy_full_link">${this.btn_copy_full_link}</button>
-                    <button type="button" class="b3-button b3-button--outline b3-button--primary" id="btn_delete">${this.btn_delete}</button>
-                </div>
+            <div class="table-container">
+                <table id="dataTable" style="width: 100%;border-collapse: collapse;">
+                <thead>
+                    <tr>
+                    <th style="border: 1px solid #ddd; padding: 8px;">${this.tbl_title_name}</th>
+                    <th style="border: 1px solid #ddd; padding: 8px;">${this.tbl_title_access_key}</th>
+                    <th style="border: 1px solid #ddd; padding: 8px;">${this.tbl_title_home_page}</th>
+                    </tr>
+                </thead>
+                <tbody id="tbl_body">
+                    ${this.tbody}
+                    </tbody>
+                </table>
+            </div>
+            <div class="btn-group" style="text-align: center;">
+                <button type="button" class="b3-button b3-button--outline b3-button--primary" id="btn_copy_link">${this.btn_copy_link}</button>
+                <button type="button" class="b3-button b3-button--outline b3-button--primary" id="btn_copy_full_link">${this.btn_copy_full_link}</button>
+                <button type="button" class="b3-button b3-button--outline b3-button--primary" id="btn_delete">${this.btn_delete}</button>
+                <button type="button" class="b3-button b3-button--outline b3-button--primary" id="btn_home_page">${this.btn_home_page}</button>
+            </div>
             </div>
         `;
         return this.html;
@@ -109,7 +123,6 @@ interface exportHtmlData {
     id: string;
     name: string;
 }
-
 interface exportHtmlRootObject {
     code: number;
     msg: string;
@@ -129,8 +142,9 @@ interface IUploadArgsReq {
     access_key: string;
     access_key_enable: boolean;
     mini_menu: boolean;
-    title_image_height: string
-    custom_css: string
+    title_image_height: string;
+    custom_css: string;
+    home_page: boolean;
 }
 interface IGetLinkReq {
     appid: string;
@@ -194,12 +208,10 @@ interface Ial {
     type: string;
     updated: string;
 }
-
 interface AttrView {
     id: string;
     name: string;
 }
-
 interface IgetDocResData {
     id: string;
     rootID: string;
@@ -211,7 +223,6 @@ interface IgetDocResData {
     icon: string;
     attrViews: AttrView[];
 }
-
 interface IgetDocRes {
     code: number;
     msg: string;
@@ -221,6 +232,15 @@ interface IRes {
     err: number;
     msg: string;
     data: string;
+}
+interface IGetLinkData {
+    link: string;
+    home_page: boolean;
+}
+interface IGetLinkResquest {
+    err: number;
+    msg: string;
+    data: IGetLinkData;
 }
 interface IFuncData {
     err: boolean,
@@ -234,43 +254,22 @@ const result: string[][] = [
 ];
 export default class PluginSample extends Plugin {
 
-    private plugin_version: string = "2.3.0";
+    private plugin_version: string = "2.4.0";
     settingUtils: SettingUtils;
     private lang: string;
 
     async onload() {
-        const i18n = this.i18n
 
         this.data[STORAGE_NAME] = { readonlyText: "Readonly" };
-        console.debug("loading plugin-sample", this.i18n);
 
-        this.addIcons(`<symbol id="iconShareSystem" viewBox="0 0 1024 1024">
-        <g>
-<path d="M220.525714 521.508571m-180.845714 0a180.845714 180.845714 0 1 0 361.691429 0 180.845714 180.845714 0 1 0-361.691429 0Z" fill="currentColor" p-id="6573"></path><path d="M751.36 883.2m-140.8 0a140.8 140.8 0 1 0 281.6 0 140.8 140.8 0 1 0-281.6 0Z" fill="currentColor" p-id="6574"></path><path d="M843.702857 140.8m-140.8 0a140.8 140.8 0 1 0 281.6 0 140.8 140.8 0 1 0-281.6 0Z" fill="currentColor" p-id="6575"></path><path d="M282.477714 654.939429l40.228572-69.668572L711.314286 809.618286l-40.228572 69.668571zM293.485714 419.675429L731.666286 166.692571l40.228571 69.668572L333.714286 489.380571z" fill="currentColor" p-id="6576"></path>
-       </g>
-       `);
+        this.addIcons(`<symbol id="iconShareSystem" viewBox="0 0 1024 1024">        <g><path d="M220.525714 521.508571m-180.845714 0a180.845714 180.845714 0 1 0 361.691429 0 180.845714 180.845714 0 1 0-361.691429 0Z" fill="currentColor" p-id="6573"></path><path d="M751.36 883.2m-140.8 0a140.8 140.8 0 1 0 281.6 0 140.8 140.8 0 1 0-281.6 0Z" fill="currentColor" p-id="6574"></path><path d="M843.702857 140.8m-140.8 0a140.8 140.8 0 1 0 281.6 0 140.8 140.8 0 1 0-281.6 0Z" fill="currentColor" p-id="6575"></path><path d="M282.477714 654.939429l40.228572-69.668572L711.314286 809.618286l-40.228572 69.668571zM293.485714 419.675429L731.666286 166.692571l40.228571 69.668572L333.714286 489.380571z" fill="currentColor" p-id="6576"></path>       </g>`);
 
         // 添加顶部菜单
         this.addTopBar({
             icon: "iconShareSystem",
             title: this.i18n.topBarTitle,
             position: "right",
-            callback: async () => {
-                let docid = await this.getActivePage()
-                if (!docid) {
-                    this.pushErrMsgLang(i18n.result_no_open_page)
-                    return
-                }
-                try {
-                    await this.getLink()
-
-                } catch (error) {
-                    console.error(error)
-                    pushErrMsg(error.message, 7000)
-
-                }
-                this.openSetting();
-            }
+            callback: () => this.open_plugin_page(),
         });
 
         // 当onLayoutReady()执行时，this.settingUtils被载入
@@ -295,7 +294,7 @@ export default class PluginSample extends Plugin {
             button: {
                 label: this.i18n.menu_create_share_label,
                 callback: () => {
-                    this.createLink()
+                    this.create_link()
                 }
             }
         });
@@ -310,9 +309,9 @@ export default class PluginSample extends Plugin {
             button: {
                 label: this.i18n.menu_delete_share_label,
                 callback: async () => {
-                    let g = await this.deleteLink()
+                    let g = await this.delete_link()
                     if (g.err) {
-                        this.pushErrMsgLang(g.err)
+                        this.push_err_msg_lang(g.err)
                         return
                     }
 
@@ -358,7 +357,7 @@ export default class PluginSample extends Plugin {
                 callback: async () => {
                     let share_link = await this.settingUtils.get("share_link")
                     let content = await this.settingUtils.get("share_link")
-                    let title = await this.getDocTitle(await this.getActivePage())
+                    let title = await this.get_doc_title(await this.get_active_page())
                     let access_key_enable = await this.settingUtils.get("access_key_enable") as boolean
 
                     if (access_key_enable) {
@@ -383,7 +382,7 @@ export default class PluginSample extends Plugin {
             button: {
                 label: this.i18n.menu_open_page_manager_title,
                 callback: async () => {
-                    this.pageManager();
+                    this.page_manager();
                 }
             }
         });
@@ -464,7 +463,7 @@ export default class PluginSample extends Plugin {
 
         });
 
-        // 复选框-启用浏览器
+        // 单选框-启用浏览器
         this.settingUtils.addItem({
             key: "enable_browser",
             value: false,
@@ -480,7 +479,19 @@ export default class PluginSample extends Plugin {
             }
         });
 
-        // 复选框-重新生成链接
+        // 单选框-设置首页
+        this.settingUtils.addItem({
+            key: "home_page",
+            value: false,
+            type: "checkbox",
+            title: this.i18n.menu_home_page_title,
+            description: this.i18n.menu_home_page_desc,
+            action: {
+                callback: async () => this.home_page()
+            }
+        });
+
+        // 单选框-重新生成链接
         this.settingUtils.addItem({
             key: "exist_link_create",
             value: false,
@@ -593,7 +604,7 @@ export default class PluginSample extends Plugin {
             }
         });
 
-        // 复选框-隐藏版本
+        // 单选框-隐藏版本
         this.settingUtils.addItem({
             key: "hide_version",
             value: true,
@@ -617,25 +628,12 @@ export default class PluginSample extends Plugin {
             title: this.i18n.hintTitle,
             description: this.i18n.hintDesc,
         });
-        this.lang = await this.getlang()
-        const frontEnd = getFrontend();
-        if ((frontEnd === "browser-mobile" || frontEnd === "browser-desktop") && (1)){
-            if (window.location.protocol=="https:"){
-                let address = this.settingUtils.take("address")
-                if (address.startsWith("http:")) {
-                   pushErrMsg("浏览器使用https访问时，分享插件服务器的地址请使用https,而不是http")
-                }
-            }
-        }
 
-        console.debug(this.i18n.helloPlugin);
-
+        this.init_plugin();
     }
-
     async onLayoutReady() {
         await this.settingUtils.load();
     }
-
     async onunload() {
 
         console.debug(this.i18n.byePlugin);
@@ -643,11 +641,43 @@ export default class PluginSample extends Plugin {
         showMessage("Goodbye SiYuan Plugin");
         console.debug("onunload");
     }
-
     uninstall() {
         console.debug("uninstall");
     }
-    async getlang() {
+    // 插件被安装时，或者插件被启用时
+    init_plugin() {
+        const frontEnd = getFrontend();
+        if ((frontEnd === "browser-mobile" || frontEnd === "browser-desktop")) {
+            if (window.location.protocol == "https:") {
+                let address = this.settingUtils.take("address")
+                if (address.startsWith("http:")) {
+                    pushErrMsg("浏览器使用https访问时，分享插件服务器的地址请使用https,而不是http")
+                    return
+                }
+            }
+        }
+    }
+    // 打开插件页面时
+    async open_plugin_page() {
+        const i18n = this.i18n
+
+        let docid = await this.get_active_page()
+        if (!docid) {
+            this.push_err_msg_lang(i18n.result_no_open_page)
+            return
+        }
+        try {
+            await this.get_link()
+
+        } catch (error) {
+            console.error(error)
+            pushErrMsg(error.message, 7000)
+
+        }
+        this.get_server_info()
+        this.openSetting();
+    }
+    async get_lang() {
         // 获取当前页的ID
         const url = "api/system/getConf"
 
@@ -670,7 +700,7 @@ export default class PluginSample extends Plugin {
                 return "en_US"
             });
     }
-    async getsystemInfo() {
+    async get_system_info() {
         // 获取当前页的ID
         const url = "api/system/getConf"
 
@@ -722,11 +752,11 @@ export default class PluginSample extends Plugin {
                 return config_system
             });
     }
-    async getSystemID() {
-        let system_info = await this.getsystemInfo()
+    async get_system_id() {
+        let system_info = await this.get_system_info()
         return system_info.id
     }
-    async getDocTitle(id) {
+    async get_doc_title(id) {
         const url = "api/block/getDocInfo"
         let data = {
             id: id
@@ -773,7 +803,9 @@ export default class PluginSample extends Plugin {
             });
 
     }
-    async getActivePage() {
+    async get_active_page() {
+        const i18n = this.i18n;
+
         // 获取当前页的ID
         const url = "api/system/getConf"
 
@@ -798,18 +830,26 @@ export default class PluginSample extends Plugin {
 
                 for (let i = 0; i < active_page_list.children.length; i++) {
                     if (active_page_list.children[i].active == true) {
+                        let id = active_page_list.children[i].children.blockId;
+                        if (id == "") {
+                            pushErrMsg(i18n.error_no_active_page)
+                            console.error(i18n.error_no_active_page);
+                            return ""
+                        }
                         return active_page_list.children[i].children.blockId
                     }
                 }
+                pushErrMsg(i18n.error_no_active_page)
+                console.error(i18n.error_no_active_page);
+                return ""
 
             })
             .catch(function (error) {
-
                 console.error(error);
                 return ""
             });
     }
-    async getTheme() {
+    async get_theme() {
         const url = "api/system/getConf"
 
         let data = "{}"
@@ -856,11 +896,24 @@ export default class PluginSample extends Plugin {
                 return ""
             });
     }
+    push_err_msg_lang(seq) {
+        switch (this.lang) {
+            case "zh_CN":
+                pushErrMsg(result[0][seq])
+                break
+            case "en_US":
+                pushErrMsg(result[1][seq])
+                break
+            default:
+                pushErrMsg(result[1][seq])
+                break
+        }
+    }
 
     // 功能: 导出html
     // 输入: 页面ID
     // 输入: 保存路径
-    async exportHtml(id) {
+    async export_html(id) {
         let savePath = await this.get_temp_dir()
 
         await this.rmdir_temp_dir()
@@ -913,7 +966,7 @@ export default class PluginSample extends Plugin {
     }
     // 功能: 使用思源笔记内部API来压缩资源文件
     // 输出: 取决于API的返回参数
-    async exportResource() {
+    async export_resource() {
         const export_zip_filename = "resources"
 
         let g: IFuncData = {
@@ -943,11 +996,10 @@ export default class PluginSample extends Plugin {
             })
         return g
     }
+    async page_manager() {
+        let language: string[] = [this.i18n.pm_tbl_title_name, this.i18n.pm_tbl_title_access_key, this.i18n.pm_tbl_title_home_page, this.i18n.pm_btn_copy_link, this.i18n.pm_btn_copy_full_link, this.i18n.pm_btn_delete, this.i18n.pm_btn_home_page,this.i18n.yes]
 
-    async pageManager() {
-        let language: string[] = [this.i18n.pm_tbl_title_name, this.i18n.pm_tbl_title_access_key, this.i18n.pm_btn_copy_link, this.i18n.pm_btn_copy_full_link, this.i18n.pm_btn_delete]
-
-        let tableData = await this.getUrlList()
+        let tableData = await this.get_url_list()
         let pageData = new PageManagerHtml(language, tableData);
         const dialog = new Dialog({
             title: this.i18n.menu_pag_manager_title,
@@ -1017,9 +1069,9 @@ export default class PluginSample extends Plugin {
                 pushErrMsg(this.i18n.result_choose)
                 return
             }
-            let g = await this.deleteLink(pageData.data[idx].docid)
+            let g = await this.delete_link(pageData.data[idx].docid)
             if (g.err) {
-                this.pushErrMsgLang(g.err)
+                this.push_err_msg_lang(g.err)
                 return
             }
 
@@ -1027,13 +1079,30 @@ export default class PluginSample extends Plugin {
             const parentElement = selectedRow.parentNode;
             parentElement.removeChild(selectedRow);
         })
-
+        // 设置首页
+        dialog.element.querySelector('#btn_home_page').addEventListener('click', async () => {
+            const selectedRow = document.querySelector('tr[data-selected="true"]');
+            let idx = selectedRow.getAttribute("data-idx")
+            if (!selectedRow) {
+                pushErrMsg(this.i18n.result_choose)
+                return
+            }
+            let ok = await this.set_home_page(pageData.data[idx].docid)
+            if (ok){
+                // 清除其他几行的内容，在当前行添加this.I18n.yes
+                const allTrs = tr.querySelectorAll('tr');
+                allTrs.forEach(tr => {
+                    tr.querySelector('td:last-child').textContent = '';
+                });
+                selectedRow.querySelector('td:last-child').textContent = this.i18n.yes;
+            }
+        })
 
     }
-    // 获取绝对路径的缓存地址
+    // 功能: 获取绝对路径的缓存地址
     async get_temp_dir() {
         let savePath: string
-        let system_info = await this.getsystemInfo()
+        let system_info = await this.get_system_info()
 
         // 如果是mac
         if (system_info.os == "darwin") {
@@ -1080,7 +1149,7 @@ export default class PluginSample extends Plugin {
     async rmdir_temp_dir() {
         const i18n = this.i18n;
 
-        // 创建文件夹
+        // 删除文件夹
         const data = {
             path: tmp_dir,
         }
@@ -1091,7 +1160,7 @@ export default class PluginSample extends Plugin {
                 console.error(`${i18n.result_rm_tmp}${error}`)
             })
     }
-    async getFile(path) {
+    async get_file(path) {
         const i18n = this.i18n;
 
         let g: IFuncData = {
@@ -1133,9 +1202,9 @@ export default class PluginSample extends Plugin {
 
             })
     }
-    async uploadFile(serverAddress) {
-        let appid = await this.getSystemID()
-        let docid = await this.getActivePage()
+    async upload_file(serverAddress) {
+        let appid = await this.get_system_id()
+        let docid = await this.get_active_page()
         const i18n = this.i18n;
 
 
@@ -1144,16 +1213,16 @@ export default class PluginSample extends Plugin {
             data: ""
         }
 
-        let content = await this.exportHtml(docid)
+        let content = await this.export_html(docid)
         if (content == "") {
             return
         }
-        g = await this.exportResource()
+        g = await this.export_resource()
         if (g.err == true) {
             return g
         }
 
-        g = await this.getFile(g.data)
+        g = await this.get_file(g.data)
         if (g.err == true) {
             return g
         }
@@ -1209,19 +1278,19 @@ export default class PluginSample extends Plugin {
     // 功能: 上传分享文档的参数到分享服务器
     // 返回参数: IFuncData.err 表示请求是否成功
     // 返回参数: IFuncData.data 表示返回链接
-    async uploadArgs(server_address: string, content: string) {
+    async upload_args(server_address: string, content: string) {
         const i18n = this.i18n;
 
         let access_key = this.settingUtils.get("access_key") as string
 
-        let docid = await this.getActivePage()
+        let docid = await this.get_active_page()
         let data: IUploadArgsReq = {
-            appid: await this.getSystemID(),
+            appid: await this.get_system_id(),
             docid: docid,
             content: content,
             version: Constants.SIYUAN_VERSION,
-            theme: await this.getTheme(),
-            title: await this.getDocTitle(docid),
+            theme: await this.get_theme(),
+            title: await this.get_doc_title(docid),
             hide_version: this.settingUtils.get("hide_version"),
             plugin_version: this.plugin_version,
             exist_link_create: this.settingUtils.get("exist_link_create"),
@@ -1231,6 +1300,7 @@ export default class PluginSample extends Plugin {
             mini_menu: this.settingUtils.get("mini_menu"),
             title_image_height: this.settingUtils.get("title_image_height"),
             custom_css: this.settingUtils.take("custom_css"),
+            home_page: this.settingUtils.get("home_page") as boolean,
         };
 
         let url = server_address + "/api/upload_args"
@@ -1272,11 +1342,10 @@ export default class PluginSample extends Plugin {
                 return g
             })
     }
-
     // 功能: 获取分享链接
     // 返回参数: IFuncData.err 表示请求是否成功
     // 返回参数: IFuncData.data 表示返回链接
-    async createLink() {
+    async create_link() {
         this.settingUtils.disable("create_share")
 
         let g: IFuncData = {
@@ -1284,16 +1353,16 @@ export default class PluginSample extends Plugin {
             data: ""
         }
         let server_address = this.settingUtils.get("address");
-        g = await this.uploadFile(server_address)
+        g = await this.upload_file(server_address)
         if (g.err == true) {
-            this.pushErrMsgLang(g.err)
+            this.push_err_msg_lang(g.err)
             return g
         }
 
-        g = await this.uploadArgs(server_address, g.data)
+        g = await this.upload_args(server_address, g.data)
 
         if (g.err == true) {
-            this.pushErrMsgLang(g.err)
+            this.push_err_msg_lang(g.err)
             return
         }
 
@@ -1304,44 +1373,25 @@ export default class PluginSample extends Plugin {
         this.settingUtils.enable("access_key_enable")
 
         pushMsg(this.i18n.result_create_ok)
-        console.log(this.i18n.result_create_ok, "233")
 
     }
-
-    pushErrMsgLang(seq) {
-        switch (this.lang) {
-            case "zh_CN":
-                pushErrMsg(result[0][seq])
-                break
-            case "en_US":
-                pushErrMsg(result[1][seq])
-                break
-            default:
-                pushErrMsg(result[1][seq])
-                break
-        }
-    }
-
     // 功能: 获取分享链接
     // 返回: IFuncData结构体，包含err和data，
     // 返回参数: err 表示请求是否成功
     // 返回参数: data 表示返回链接
-    async getLink() {
+    async get_link() {
         this.prompt_new_server();
 
-        let g: IFuncData = {
-            err: true,
-            data: ""
-        }
+
 
         const data: IGetLinkReq = {
-            appid: await this.getSystemID(),
-            docid: await this.getActivePage(),
+            appid: await this.get_system_id(),
+            docid: await this.get_active_page(),
             plugin_version: this.plugin_version
 
         };
         let utils = this.settingUtils
-        const url = utils.get("address") + "/api/getlink"
+        const url = utils.get("address") + "/api/v2/link"
 
         let headers = {}
         const enable_browser = utils.get("enable_browser")
@@ -1352,7 +1402,6 @@ export default class PluginSample extends Plugin {
             headers['Content-Type'] = 'text/plain'
         }
 
-        utils.enable("create_share")
         utils.disable("delete_share")
         utils.disable("copy_link")
         utils.disable("copy_link_full")
@@ -1364,62 +1413,82 @@ export default class PluginSample extends Plugin {
         let ret = false
         await axios.post(url, data, { headers, timeout: 30000 })
             .then(function (response) {
-                let data: IRes = response.data
-                switch (data.err) {
+                let res: IGetLinkResquest = response.data
+                switch (res.err) {
                     case 0:
-                        g.err = false
-                        g.data = data.data
                         utils.enable("delete_share")
-                        utils.set("share_link", g.data)
+                        utils.set("share_link", res.data.link)
                         utils.enable("copy_link")
                         utils.enable("copy_link_full")
-
                         utils.enable("access_key_enable")
                         utils.enable("access_key")
+                        utils.set("home_page", res.data.home_page)
                         ret = true
                         console.log(ret)
                         break
                     case 3:
-                        g.err = false
                         ret = true
                         break
                     default:
-                        g.err = true
-                        this.pushErrMsgLang(g.err)
+                        this.push_err_msg_lang(res.err)
                         break
                 }
-                return g
 
             })
             .catch(function (error) {
                 utils.disable("create_share")
                 console.error(error)
-                g.data = error.message
-                return g
+                return
             })
         if (!ret) {
             pushErrMsg(this.i18n.result_system_access_failed)
             return
         }
         this.access_key_get()
-
-
     }
 
+    async get_server_info() {
+        let utils = this.settingUtils
+        const url = utils.get("address") + "/api/info"
+
+        let headers = {}
+        const enable_browser = utils.get("enable_browser")
+        if (enable_browser) {
+            headers['Content-Type'] = 'application/json'
+            headers['cros-status'] = enable_browser
+        } else {
+            headers['Content-Type'] = 'text/plain'
+        }
+        await axios.get(url, { headers, timeout: 30000 }).then(function (response) {
+            let data = response.data
+            if (data.is_public_server) {
+                utils.disable("home_page")
+
+            } else {
+                utils.enable("home_page")
+
+            }
+
+        }).catch(function (error) {
+            utils.disable("home_page")
+            console.error(error)
+        })
+
+    }
     // 功能: 删除分享链接
     // 返回: IFuncData结构体，包含err和data，
     // 返回参数: err 表示请求是否成功
-    async deleteLink(docid?: string) {
+    async delete_link(docid?: string) {
         const i18n = this.i18n;
         let g: IFuncData = {
             err: true,
             data: "",
         }
 
-        docid = docid ?? await this.getActivePage()
+        docid = docid ?? await this.get_active_page()
 
         const data: IGetLinkReq = {
-            appid: await this.getSystemID(),
+            appid: await this.get_system_id(),
             docid: docid,
             plugin_version: this.plugin_version
 
@@ -1455,7 +1524,6 @@ export default class PluginSample extends Plugin {
                 return g
             })
     }
-
     // 功能: 访问密钥的 API
     // 返回: IFuncData结构体，包含err和data，
     // 返回参数: err 表示请求是否成功
@@ -1467,8 +1535,8 @@ export default class PluginSample extends Plugin {
         }
 
         const data: IAccessKeyReq = {
-            appid: await this.getSystemID(),
-            docid: await this.getActivePage(),
+            appid: await this.get_system_id(),
+            docid: await this.get_active_page(),
             accesskey: this.settingUtils.get("access_key"),
             plugin_version: this.plugin_version
 
@@ -1513,7 +1581,6 @@ export default class PluginSample extends Plugin {
             });
 
     }
-
     async access_key_disable() {
         const i18n = this.i18n
 
@@ -1523,8 +1590,8 @@ export default class PluginSample extends Plugin {
         }
 
         const data: IAccessKeyReq = {
-            appid: await this.getSystemID(),
-            docid: await this.getActivePage(),
+            appid: await this.get_system_id(),
+            docid: await this.get_active_page(),
             accesskey: "",
             plugin_version: this.plugin_version
 
@@ -1574,8 +1641,8 @@ export default class PluginSample extends Plugin {
         utils.set("access_key_enable", false)
         utils.set("access_key", "")
 
-        let appid = await this.getSystemID()
-        let docid = await this.getActivePage()
+        let appid = await this.get_system_id()
+        let docid = await this.get_active_page()
 
         const url = utils.get("address") + "/api/key?" + "appid=" + appid + "&docid=" + docid
 
@@ -1630,8 +1697,8 @@ export default class PluginSample extends Plugin {
             textArea.remove();
         }
     }
-    async getUrlList() {
-        let appid = await this.getSystemID();
+    async get_url_list() {
+        let appid = await this.get_system_id();
         let server_address = this.settingUtils.get("address");
         const url = server_address + "/api/getlinkall?appid=" + appid
 
@@ -1665,5 +1732,97 @@ export default class PluginSample extends Plugin {
             return;
         }
         pushMsg(this.i18n.new_server, 30000)
+    }
+    async home_page() {
+        const i18n = this.i18n
+        const current_value = this.settingUtils.get("home_page")
+
+        let appid = await this.get_system_id()
+        let docid = await this.get_active_page()
+
+        let data = {
+            appid: appid,
+            docid: docid,
+            plugin_version: this.plugin_version
+        }
+        let utils = this.settingUtils
+        const url = utils.get("address") + "/api/v2/home_page"
+
+        let headers = {}
+        const enable_browser = utils.get("enable_browser")
+        if (enable_browser) {
+            headers['Content-Type'] = 'application/json'
+            headers['cros-status'] = enable_browser
+        } else {
+            headers['Content-Type'] = 'text/plain'
+        }
+        if (current_value) {
+            await axios.delete(url, { headers, timeout: 30000, data: data }).then(function (response) {
+                let data = response.data
+                console.log(data);
+                if (data.err == 0) {
+                    utils.setAndSave("home_page", !current_value)
+                    utils.set("share_link", data.data.link)
+                    pushMsg(i18n.msg_delete_home_page)
+                } else {
+                    pushErrMsg(i18n.msg_exec_failed)
+                }
+            }).catch(function (error) {
+                console.error(error)
+            })
+        } else {
+
+            await axios.post(url, data, { headers, timeout: 30000 }).then(function (response) {
+                let data = response.data
+                if (data.err == 0) {
+                    utils.setAndSave("home_page", !current_value)
+                    utils.set("share_link", data.data.link)
+                    pushMsg(i18n.msg_open_home_page)
+                } else {
+                    pushErrMsg(i18n.msg_exec_failed)
+                }
+            }).catch(function (error) {
+                console.error(error)
+            })
+
+        }
+
+    }
+     async  set_home_page(docid: string) {
+        const i18n = this.i18n
+
+        let appid = await this.get_system_id()
+
+        let data = {
+            appid: appid,
+            docid: docid
+        }
+        let utils = this.settingUtils
+        const url = utils.get("address") + "/api/v2/home_page"
+
+        let headers = {}
+        const enable_browser = utils.get("enable_browser")
+        if (enable_browser) {
+            headers['Content-Type'] = 'application/json'
+            headers['cros-status'] = enable_browser
+        } else {
+            headers['Content-Type'] = 'text/plain'
+        }
+        return await axios.post(url, data, { headers, timeout: 30000 }).then(function (response) {
+            let data = response.data
+            if (data.err == 0) {
+                utils.set("share_link", data.data.link)
+                pushMsg(i18n.msg_open_home_page)
+                return true
+            } else {
+                pushErrMsg(i18n.msg_exec_failed)
+                return false
+            }
+        }).catch(function (error) {
+            console.error(error)
+            return false
+
+        })
+
     }
 }
