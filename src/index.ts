@@ -254,7 +254,7 @@ const result: string[][] = [
 ];
 export default class PluginSample extends Plugin {
 
-    private plugin_version: string = "2.4.0";
+    private plugin_version: string = "2.4.1";
     settingUtils: SettingUtils;
     private lang: string;
 
@@ -1452,21 +1452,14 @@ export default class PluginSample extends Plugin {
         const url = utils.get("address") + "/api/info"
 
         let headers = {}
-        const enable_browser = utils.get("enable_browser")
-        if (enable_browser) {
-            headers['Content-Type'] = 'application/json'
-            headers['cros-status'] = enable_browser
-        } else {
-            headers['Content-Type'] = 'text/plain'
-        }
+
         await axios.get(url, { headers, timeout: 30000 }).then(function (response) {
-            let data = response.data
-            if (data.is_public_server) {
+            let res  = response.data
+            if (res.data.is_public_server) {
                 utils.disable("home_page")
 
             } else {
                 utils.enable("home_page")
-
             }
 
         }).catch(function (error) {
@@ -1703,14 +1696,7 @@ export default class PluginSample extends Plugin {
         const url = server_address + "/api/getlinkall?appid=" + appid
 
         let headers = {}
-        const utils = this.settingUtils
-        const enable_browser = utils.get("enable_browser")
-        if (enable_browser) {
-            headers['Content-Type'] = 'application/json'
-            headers['cros-status'] = enable_browser
-        } else {
-            headers['Content-Type'] = 'text/plain'
-        }
+        headers['Content-Type'] = 'application/json'
 
         let ret: PageManagerTableData[]
         ret = await axios.get(url, { headers })
