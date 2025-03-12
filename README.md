@@ -23,6 +23,7 @@
 Export html files and other resource files and upload them to the server. The server will also generate the corresponding index.htm as the homepage.
 
 # Version description
+- v2.4.2: Fix the error that the "Create Share" button cannot be used when changing servers, and set the request timeout to 10 seconds.
 - v2.4.1: Fix cross-domain error
 - v2.4.0: Add home page function
 - v2.3.3: When the browser accesses the client via https, add an error reminder to prompt the server address of http to access

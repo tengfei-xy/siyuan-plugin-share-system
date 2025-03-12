@@ -1253,7 +1253,7 @@ export default class PluginSample extends Plugin {
         // 发送请求  
         serverAddress = serverAddress + '/api/upload_file' + `?appid=${appid}&docid=${docid}&type=${ft}`
 
-        return await axios.post(serverAddress, formData, { headers, timeout: 300000 })
+        return await axios.post(serverAddress, formData, { headers, timeout: 100000 })
             .then(function (response) {
                 let data: IRes = response.data
                 console.debug(i18n.result_upload_file, response.data)
@@ -1411,7 +1411,7 @@ export default class PluginSample extends Plugin {
 
 
         let ret = false
-        await axios.post(url, data, { headers, timeout: 30000 })
+        await axios.post(url, data, { headers, timeout: 10000 })
             .then(function (response) {
                 let res: IGetLinkResquest = response.data
                 switch (res.err) {
@@ -1423,14 +1423,20 @@ export default class PluginSample extends Plugin {
                         utils.enable("access_key_enable")
                         utils.enable("access_key")
                         utils.set("home_page", res.data.home_page)
+                        utils.enable("create_share")
                         ret = true
                         console.log(ret)
                         break
                     case 3:
+                        utils.enable("create_share")
                         ret = true
+                        break
+                    case 6:
+                        utils.enable("create_share")
                         break
                     default:
                         this.push_err_msg_lang(res.err)
+                        utils.disable("create_share")
                         break
                 }
 
@@ -1453,7 +1459,7 @@ export default class PluginSample extends Plugin {
 
         let headers = {}
 
-        await axios.get(url, { headers, timeout: 30000 }).then(function (response) {
+        await axios.get(url, { headers, timeout: 10000 }).then(function (response) {
             let res  = response.data
             if (res.data.is_public_server) {
                 utils.disable("home_page")
@@ -1717,7 +1723,7 @@ export default class PluginSample extends Plugin {
         if (!server_address.startsWith("http://124.223.15.220")) {
             return;
         }
-        pushMsg(this.i18n.new_server, 30000)
+        pushMsg(this.i18n.new_server, 10000)
     }
     async home_page() {
         const i18n = this.i18n
@@ -1743,7 +1749,7 @@ export default class PluginSample extends Plugin {
             headers['Content-Type'] = 'text/plain'
         }
         if (current_value) {
-            await axios.delete(url, { headers, timeout: 30000, data: data }).then(function (response) {
+            await axios.delete(url, { headers, timeout: 10000, data: data }).then(function (response) {
                 let data = response.data
                 console.log(data);
                 if (data.err == 0) {
@@ -1758,7 +1764,7 @@ export default class PluginSample extends Plugin {
             })
         } else {
 
-            await axios.post(url, data, { headers, timeout: 30000 }).then(function (response) {
+            await axios.post(url, data, { headers, timeout: 10000 }).then(function (response) {
                 let data = response.data
                 if (data.err == 0) {
                     utils.setAndSave("home_page", !current_value)
@@ -1794,7 +1800,7 @@ export default class PluginSample extends Plugin {
         } else {
             headers['Content-Type'] = 'text/plain'
         }
-        return await axios.post(url, data, { headers, timeout: 30000 }).then(function (response) {
+        return await axios.post(url, data, { headers, timeout: 10000 }).then(function (response) {
             let data = response.data
             if (data.err == 0) {
                 utils.set("share_link", data.data.link)
