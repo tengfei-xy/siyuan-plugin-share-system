@@ -80,7 +80,7 @@ class PageManagerHtml {
             let homepage = ""
             if (this.data[i].is_home_page) {
                 homepage = this.prompt_yes
-            }   
+            }
             this.tbody += `<tr data-idx=${i}>
             <td style="border: 1px solid #ddd; padding: 8px;">${this.data[i].title}</td>
             <td style="border: 1px solid #ddd; padding: 8px;text-align: center;">${this.data[i].access_key}</td>
@@ -175,6 +175,9 @@ interface IAppearance {
     closeButtonBehavior: number;
     hideStatusBar: boolean;
 }
+interface IAPI {
+    token: string;
+}
 interface IConfSystem {
     id: string;
     name: string;
@@ -196,6 +199,7 @@ interface IConfSystem {
     downloadInstallPkg: boolean;
     autoLaunch: boolean;
     lockScreenMode: number;
+    api: IAPI;
 }
 interface INetworkProxy {
     scheme: string;
@@ -259,7 +263,6 @@ export default class PluginSample extends Plugin {
     private lang: string;
 
     async onload() {
-
         this.data[STORAGE_NAME] = { readonlyText: "Readonly" };
 
         this.addIcons(`<symbol id="iconShareSystem" viewBox="0 0 1024 1024">        <g><path d="M220.525714 521.508571m-180.845714 0a180.845714 180.845714 0 1 0 361.691429 0 180.845714 180.845714 0 1 0-361.691429 0Z" fill="currentColor" p-id="6573"></path><path d="M751.36 883.2m-140.8 0a140.8 140.8 0 1 0 281.6 0 140.8 140.8 0 1 0-281.6 0Z" fill="currentColor" p-id="6574"></path><path d="M843.702857 140.8m-140.8 0a140.8 140.8 0 1 0 281.6 0 140.8 140.8 0 1 0-281.6 0Z" fill="currentColor" p-id="6575"></path><path d="M282.477714 654.939429l40.228572-69.668572L711.314286 809.618286l-40.228572 69.668571zM293.485714 419.675429L731.666286 166.692571l40.228571 69.668572L333.714286 489.380571z" fill="currentColor" p-id="6576"></path>       </g>`);
@@ -323,6 +326,8 @@ export default class PluginSample extends Plugin {
                     this.settingUtils.disable("access_key")
                     this.settingUtils.disable("delete_share")
                     this.settingUtils.disable("access_key_enable")
+                    this.settingUtils.set("home_page", false)
+                    this.settingUtils.disable("home_page")
                     pushMsg(this.i18n.result_delete_ok)
 
                 }
@@ -406,20 +411,6 @@ export default class PluginSample extends Plugin {
             }
         });
 
-        // 输入框-访问码
-        this.settingUtils.addItem({
-            key: "access_code",
-            value: "",
-            type: "textinput",
-            title: this.i18n.menu_access_code_title,
-            description: this.i18n.menu_access_code_desc,
-            action: {
-                callback: async () => {
-                    this.settingUtils.takeAndSave("access_code")
-                }
-            }
-
-        });
         // 按钮-启动访问密码
         this.settingUtils.addItem({
             key: "access_key_enable",
@@ -461,22 +452,6 @@ export default class PluginSample extends Plugin {
                 }
             }
 
-        });
-
-        // 单选框-启用浏览器
-        this.settingUtils.addItem({
-            key: "enable_browser",
-            value: false,
-            type: "checkbox",
-            title: this.i18n.menu_enable_browser_title,
-            description: this.i18n.menu_enable_browser_desc,
-            action: {
-                callback: async () => {
-                    const new_value = !this.settingUtils.get("enable_browser")
-                    this.settingUtils.set("enable_browser", new_value)
-                    this.settingUtils.save()
-                }
-            }
         });
 
         // 单选框-设置首页
@@ -685,11 +660,8 @@ export default class PluginSample extends Plugin {
 
         // 设置handle
         let headers = {}
-        const access_code = this.settingUtils.get("access_code")
         headers['Content-Type'] = 'application/json'
-        if (access_code != "") {
-            headers['Authorization'] = ' Token ' + access_code
-        }
+
 
         return axios.post(url, data, headers)
             .then(function (response) {
@@ -700,8 +672,8 @@ export default class PluginSample extends Plugin {
                 return "en_US"
             });
     }
+
     async get_system_info() {
-        // 获取当前页的ID
         const url = "api/system/getConf"
 
         let data = "{}"
@@ -729,21 +701,19 @@ export default class PluginSample extends Plugin {
             disableGoogleAnalytics: false,
             downloadInstallPkg: false,
             autoLaunch: false,
-            lockScreenMode: 0
+            lockScreenMode: 0,
+            api: {
+                token: ""
+            }
         }
 
         // 设置handle
         let headers = {}
-        const access_code = this.settingUtils.get("access_code")
         headers['Content-Type'] = 'application/json'
-        if (access_code != "") {
-            headers['Authorization'] = ' Token ' + access_code
-        }
 
         return axios.post(url, data, headers)
             .then(function (response) {
-                config_system = response.data.data.conf.system
-                return config_system
+                return response.data.data.conf
 
             })
             .catch(function (error) {
@@ -752,9 +722,9 @@ export default class PluginSample extends Plugin {
                 return config_system
             });
     }
+    // 获取当前页的ID
     async get_system_id() {
-        let system_info = await this.get_system_info()
-        return system_info.id
+        return (await this.get_system_info()).system.id;
     }
     async get_doc_title(id) {
         const url = "api/block/getDocInfo"
@@ -784,11 +754,7 @@ export default class PluginSample extends Plugin {
 
         // 设置headers
         let headers = {}
-        const access_code = this.settingUtils.get("access_code")
         headers['Content-Type'] = 'application/json'
-        if (access_code != "") {
-            headers['Authorization'] = ' Token ' + access_code
-        }
 
 
         return axios_plus.post(url, data, headers)
@@ -818,11 +784,7 @@ export default class PluginSample extends Plugin {
         }
         // 设置headers
         let headers = {}
-        const access_code = this.settingUtils.get("access_code")
         headers['Content-Type'] = 'application/json'
-        if (access_code != "") {
-            headers['Authorization'] = ' Token ' + access_code
-        }
 
         return axios_plus.post(url, data, headers)
             .then(function (response) {
@@ -874,11 +836,7 @@ export default class PluginSample extends Plugin {
 
         // 设置headers
         let headers = {}
-        const access_code = this.settingUtils.get("access_code")
         headers['Content-Type'] = 'application/json'
-        if (access_code != "") {
-            headers['Authorization'] = ' Token ' + access_code
-        }
 
         return axios_plus.post(url, data, headers)
             .then(function (response) {
@@ -918,7 +876,7 @@ export default class PluginSample extends Plugin {
 
         await this.rmdir_temp_dir()
         await this.mkdir_temp_dir()
-        let url = "api/export/exportHTML"
+        let url = "/api/export/exportHTML"
         let data = {
             id: id,
             pdf: false,
@@ -935,17 +893,8 @@ export default class PluginSample extends Plugin {
         }
         // 设置headers
         let headers = {}
-        const access_code = this.settingUtils.get("access_code")
-        if (access_code == "") {
-            headers = {
-                'Content-Type': 'application/json'
-            };
-        } else {
-            headers = {
-                'Authorization': 'Token ' + access_code,
-                'Content-Type': 'application/json'
-            };
-        }
+        headers['Content-Type'] = 'application/json'
+
         const i18n = this.i18n;
         return axios_plus.post(url, data, headers)
             .then(function (response) {
@@ -978,11 +927,9 @@ export default class PluginSample extends Plugin {
             paths: [tmp_dir],
             name: export_zip_filename
         }
-        const headers = {
-            'Content-Type': 'application/json'
-        }
+        let headers = {}
+        headers["Content-Type"] = 'application/json'
         const i18n = this.i18n;
-
         await axios.post("/api/export/exportResources", data, { headers })
             .then(function (response) {
                 if (response.data.code == 0) {
@@ -997,7 +944,7 @@ export default class PluginSample extends Plugin {
         return g
     }
     async page_manager() {
-        let language: string[] = [this.i18n.pm_tbl_title_name, this.i18n.pm_tbl_title_access_key, this.i18n.pm_tbl_title_home_page, this.i18n.pm_btn_copy_link, this.i18n.pm_btn_copy_full_link, this.i18n.pm_btn_delete, this.i18n.pm_btn_home_page,this.i18n.yes]
+        let language: string[] = [this.i18n.pm_tbl_title_name, this.i18n.pm_tbl_title_access_key, this.i18n.pm_tbl_title_home_page, this.i18n.pm_btn_copy_link, this.i18n.pm_btn_copy_full_link, this.i18n.pm_btn_delete, this.i18n.pm_btn_home_page, this.i18n.yes]
 
         let tableData = await this.get_url_list()
         let pageData = new PageManagerHtml(language, tableData);
@@ -1088,7 +1035,7 @@ export default class PluginSample extends Plugin {
                 return
             }
             let ok = await this.set_home_page(pageData.data[idx].docid)
-            if (ok){
+            if (ok) {
                 // 清除其他几行的内容，在当前行添加this.I18n.yes
                 const allTrs = tr.querySelectorAll('tr');
                 allTrs.forEach(tr => {
@@ -1102,7 +1049,7 @@ export default class PluginSample extends Plugin {
     // 功能: 获取绝对路径的缓存地址
     async get_temp_dir() {
         let savePath: string
-        let system_info = await this.get_system_info()
+        let system_info = (await this.get_system_info()).system
 
         // 如果是mac
         if (system_info.os == "darwin") {
@@ -1121,9 +1068,10 @@ export default class PluginSample extends Plugin {
             data: ""
         }
 
-        const headers = {
-            'Content-Type': 'multipart/form-data',
-        }
+        let headers = {};
+        headers['Content-Type'] = 'multipart/form-data'
+
+
         // 创建文件夹
         const data = {
             path: tmp_dir,
@@ -1149,11 +1097,13 @@ export default class PluginSample extends Plugin {
     async rmdir_temp_dir() {
         const i18n = this.i18n;
 
+        let headers = {}
+
         // 删除文件夹
         const data = {
             path: tmp_dir,
         }
-        await axios.post("/api/file/removeFile", data)
+        await axios.post("/api/file/removeFile", data, { headers })
             .then(function () {
             })
             .catch(function (error) {
@@ -1167,20 +1117,7 @@ export default class PluginSample extends Plugin {
             err: true,
             data: ""
         }
-        const access_code = this.settingUtils.get("access_code")
         let headers = {}
-        if (access_code != "") {
-            headers = {
-                'Accept': 'application/zip',
-                'Content-Type': 'application/json',
-                'Authorization': 'Token ' + access_code
-            }
-        } else {
-            headers = {
-                'Accept': 'application/zip',
-                'Content-Type': 'application/json',
-            }
-        }
         headers = {
             'Accept': 'application/zip',
             'Content-Type': 'application/json',
@@ -1235,24 +1172,16 @@ export default class PluginSample extends Plugin {
         const blob = new Blob([g.fdata], { type: "application/zip" });
         formData.append('file', blob);
 
-        const enable_browser = this.settingUtils.get("enable_browser")
-
         let headers = {}
-        if (enable_browser) {
-            headers = {
-                'Content-Type': 'multipart/form-data',
-                "cros-status": enable_browser,
-            }
-        } else {
-            headers = {
-                'Content-Type': 'multipart/form-data',
-            }
+        headers['Content-Type'] = 'multipart/form-data';
+        if (this.isWeb()) {
+            headers['cros-status'] = true
         }
+
         const ft = getFrontend()
 
         // 发送请求  
         serverAddress = serverAddress + '/api/upload_file' + `?appid=${appid}&docid=${docid}&type=${ft}`
-
         return await axios.post(serverAddress, formData, { headers, timeout: 100000 })
             .then(function (response) {
                 let data: IRes = response.data
@@ -1307,12 +1236,9 @@ export default class PluginSample extends Plugin {
 
         let headers = {}
         const utils = this.settingUtils
-        const enable_browser = utils.get("enable_browser")
-        if (enable_browser) {
-            headers['Content-Type'] = 'application/json'
-            headers['cros-status'] = enable_browser
-        } else {
-            headers['Content-Type'] = 'text/plain'
+        headers['Content-Type'] = 'application/json'
+        if (this.isWeb()) {
+            headers['cros-status'] = true
         }
 
         let g: IFuncData = {
@@ -1354,6 +1280,7 @@ export default class PluginSample extends Plugin {
         }
         let server_address = this.settingUtils.get("address");
         g = await this.upload_file(server_address)
+        console.debug(g);
         if (g.err == true) {
             this.push_err_msg_lang(g.err)
             return g
@@ -1371,6 +1298,7 @@ export default class PluginSample extends Plugin {
         this.settingUtils.enable("create_share")
         this.settingUtils.enable("access_key")
         this.settingUtils.enable("access_key_enable")
+        this.settingUtils.enable("home_page")
 
         pushMsg(this.i18n.result_create_ok)
 
@@ -1382,8 +1310,6 @@ export default class PluginSample extends Plugin {
     async get_link() {
         this.prompt_new_server();
 
-
-
         const data: IGetLinkReq = {
             appid: await this.get_system_id(),
             docid: await this.get_active_page(),
@@ -1394,12 +1320,9 @@ export default class PluginSample extends Plugin {
         const url = utils.get("address") + "/api/v2/link"
 
         let headers = {}
-        const enable_browser = utils.get("enable_browser")
-        if (enable_browser) {
-            headers['Content-Type'] = 'application/json'
-            headers['cros-status'] = enable_browser
-        } else {
-            headers['Content-Type'] = 'text/plain'
+        headers['Content-Type'] = 'application/json'
+        if (this.isWeb()) {
+            headers['cros-status'] = true
         }
 
         utils.disable("delete_share")
@@ -1425,10 +1348,12 @@ export default class PluginSample extends Plugin {
                         utils.set("home_page", res.data.home_page)
                         utils.enable("create_share")
                         ret = true
-                        console.log(ret)
                         break
                     case 3:
                         utils.enable("create_share")
+                        utils.set("home_page", false)
+                        utils.disable("home_page")
+
                         ret = true
                         break
                     case 6:
@@ -1460,7 +1385,7 @@ export default class PluginSample extends Plugin {
         let headers = {}
 
         await axios.get(url, { headers, timeout: 10000 }).then(function (response) {
-            let res  = response.data
+            let res = response.data
             if (res.data.is_public_server) {
                 utils.disable("home_page")
 
@@ -1496,12 +1421,9 @@ export default class PluginSample extends Plugin {
         const url = utils.get("address") + "/api/deletelink"
 
         let headers = {}
-        const enable_browser = utils.get("enable_browser")
-        if (enable_browser) {
-            headers['Content-Type'] = 'application/json'
-            headers['cros-status'] = enable_browser
-        } else {
-            headers['Content-Type'] = 'text/plain'
+        headers['Content-Type'] = 'application/json'
+        if (this.isWeb()) {
+            headers['cros-status'] = true
         }
 
         return axios.post(url, data, { headers })
@@ -1544,12 +1466,9 @@ export default class PluginSample extends Plugin {
         const url = utils.get("address") + "/api/key?action=enable"
 
         let headers = {}
-        const enable_browser = utils.get("enable_browser")
-        if (enable_browser) {
-            headers['Content-Type'] = 'application/json'
-            headers['cros-status'] = enable_browser
-        } else {
-            headers['Content-Type'] = 'text/plain'
+        headers['Content-Type'] = 'application/json'
+        if (this.isWeb()) {
+            headers['cros-status'] = true
         }
 
         return axios({
@@ -1599,12 +1518,9 @@ export default class PluginSample extends Plugin {
         const url = this.settingUtils.get("address") + "/api/key?action=disable"
 
         let headers = {}
-        const enable_browser = this.settingUtils.get("enable_browser")
-        if (enable_browser) {
-            headers['Content-Type'] = 'application/json'
-            headers['cros-status'] = enable_browser
-        } else {
-            headers['Content-Type'] = 'text/plain'
+        headers['Content-Type'] = 'application/json'
+        if (this.isWeb()) {
+            headers['cros-status'] = true
         }
 
         return axios({
@@ -1646,12 +1562,9 @@ export default class PluginSample extends Plugin {
         const url = utils.get("address") + "/api/key?" + "appid=" + appid + "&docid=" + docid
 
         let headers = {}
-        const enable_browser = utils.get("enable_browser")
-        if (enable_browser) {
-            headers['Content-Type'] = 'application/json'
-            headers['cros-status'] = enable_browser
-        } else {
-            headers['Content-Type'] = 'text/plain'
+        headers['Content-Type'] = 'application/json'
+        if (this.isWeb()) {
+            headers['cros-status'] = true
         }
 
         axios({
@@ -1741,17 +1654,13 @@ export default class PluginSample extends Plugin {
         const url = utils.get("address") + "/api/v2/home_page"
 
         let headers = {}
-        const enable_browser = utils.get("enable_browser")
-        if (enable_browser) {
-            headers['Content-Type'] = 'application/json'
-            headers['cros-status'] = enable_browser
-        } else {
-            headers['Content-Type'] = 'text/plain'
+        headers['Content-Type'] = 'application/json'
+        if (this.isWeb()) {
+            headers['cros-status'] = true
         }
         if (current_value) {
             await axios.delete(url, { headers, timeout: 10000, data: data }).then(function (response) {
                 let data = response.data
-                console.log(data);
                 if (data.err == 0) {
                     utils.setAndSave("home_page", !current_value)
                     utils.set("share_link", data.data.link)
@@ -1780,7 +1689,7 @@ export default class PluginSample extends Plugin {
         }
 
     }
-     async  set_home_page(docid: string) {
+    async set_home_page(docid: string) {
         const i18n = this.i18n
 
         let appid = await this.get_system_id()
@@ -1793,12 +1702,9 @@ export default class PluginSample extends Plugin {
         const url = utils.get("address") + "/api/v2/home_page"
 
         let headers = {}
-        const enable_browser = utils.get("enable_browser")
-        if (enable_browser) {
-            headers['Content-Type'] = 'application/json'
-            headers['cros-status'] = enable_browser
-        } else {
-            headers['Content-Type'] = 'text/plain'
+        headers['Content-Type'] = 'application/json'
+        if (this.isWeb()) {
+            headers['cros-status'] = true
         }
         return await axios.post(url, data, { headers, timeout: 10000 }).then(function (response) {
             let data = response.data
@@ -1816,5 +1722,10 @@ export default class PluginSample extends Plugin {
 
         })
 
+    }
+    isWeb() {
+        const frontEnd = getFrontend();
+
+        return frontEnd === "browser-mobile" || frontEnd === "browser-desktop";
     }
 }
