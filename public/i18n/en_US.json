@@ -33,7 +33,7 @@
     "menu_open_page_manager_title": "sharing page management",
     "menu_open_page_manager_desc": "Can only open the current app's sharing list and manage (delete, enable/disable)",
     "menu_access_key_title": "Access Key",
-    "menu_access_key_title_desc": "The access_key required by the browser to access the shared page. After the access key is activated, it will be randomly generated.",
+    "menu_access_key_desc": "The access_key required by the browser to access the shared page. After the access key is activated, it will be randomly generated.",
     "menu_access_key_enable_title": "Startup access access_key",
     "menu_access_key_enable_title_desc": "This feature is disabled when this page is not shared.",
     "menu_exist_link_create_title": "Regenerate link",
