@@ -411,6 +411,25 @@ export default class PluginSample extends Plugin {
             }
         });
 
+        // 输入框-服务器Token
+        this.settingUtils.addItem({
+            key: "server_token",
+            value: "",
+            type: "textinput",
+            title: this.i18n.menu_server_token_title,
+            description: this.i18n.menu_server_token_desc,
+            action: {
+                callback: async () => {
+                    let address: string = this.settingUtils.take("address");
+                    if (address.endsWith(" ")) {
+                        this.settingUtils.set("address", address.trimEnd());
+                    }
+                    this.settingUtils.save();
+
+                }
+            }
+        });
+
         // 按钮-启动访问密码
         this.settingUtils.addItem({
             key: "access_key_enable",
@@ -634,22 +653,14 @@ export default class PluginSample extends Plugin {
     }
     // 打开插件页面时
     async open_plugin_page() {
-        const i18n = this.i18n
+        this.get_server_info()
 
-        let docid = await this.get_active_page()
-        if (!docid) {
-            this.push_err_msg_lang(i18n.result_no_open_page)
-            return
-        }
         try {
             await this.get_link()
-
         } catch (error) {
             console.error(error)
             pushErrMsg(error.message, 7000)
-
         }
-        this.get_server_info()
         this.openSetting();
     }
     async get_lang() {
@@ -872,6 +883,7 @@ export default class PluginSample extends Plugin {
     // 输入: 页面ID
     // 输入: 保存路径
     async export_html(id) {
+        const utils = this.settingUtils
         let savePath = await this.get_temp_dir()
 
         await this.rmdir_temp_dir()
@@ -894,6 +906,7 @@ export default class PluginSample extends Plugin {
         // 设置headers
         let headers = {}
         headers['Content-Type'] = 'application/json'
+        headers['Authorization'] = utils.get("server_token")
 
         const i18n = this.i18n;
         return axios_plus.post(url, data, headers)
@@ -907,9 +920,15 @@ export default class PluginSample extends Plugin {
                 }
             })
             .catch(function (error) {
-                console.error(error);
+                switch (error.response.data.err) {
+                    case 4:
+                        pushErrMsg(i18n.result_error_token)
+                        break;
+                    default:
+                        console.error(error)
+                        break
+                }
                 return ""
-
             });
 
     }
@@ -1237,6 +1256,8 @@ export default class PluginSample extends Plugin {
         let headers = {}
         const utils = this.settingUtils
         headers['Content-Type'] = 'application/json'
+        headers['Authorization'] = utils.get("server_token")
+
         if (this.isWeb()) {
             headers['cros-status'] = true
         }
@@ -1262,7 +1283,14 @@ export default class PluginSample extends Plugin {
                 }
             })
             .catch(function (error) {
-                console.error(error)
+                switch (error.response.data.err) {
+                    case 4:
+                        pushErrMsg(i18n.result_error_token)
+                        break;
+                    default:
+                        console.error(error)
+                        break
+                }
                 g.data = error.message
                 g.err = true
                 return g
@@ -1308,6 +1336,8 @@ export default class PluginSample extends Plugin {
     // 返回参数: err 表示请求是否成功
     // 返回参数: data 表示返回链接
     async get_link() {
+        const i18n = this.i18n;
+
         this.prompt_new_server();
 
         const data: IGetLinkReq = {
@@ -1318,9 +1348,9 @@ export default class PluginSample extends Plugin {
         };
         let utils = this.settingUtils
         const url = utils.get("address") + "/api/v2/link"
-
         let headers = {}
         headers['Content-Type'] = 'application/json'
+        headers['Authorization'] = utils.get("server_token")
         if (this.isWeb()) {
             headers['cros-status'] = true
         }
@@ -1356,6 +1386,7 @@ export default class PluginSample extends Plugin {
 
                         ret = true
                         break
+
                     case 6:
                         utils.enable("create_share")
                         break
@@ -1367,8 +1398,15 @@ export default class PluginSample extends Plugin {
 
             })
             .catch(function (error) {
-                utils.disable("create_share")
-                console.error(error)
+                switch (error.response.data.err) {
+                    case 4:
+                        pushErrMsg(i18n.result_error_token)
+                        break;
+                    default:
+                        utils.disable("create_share")
+                        console.error(error)
+                        break
+                }
                 return
             })
         if (!ret) {
@@ -1388,9 +1426,17 @@ export default class PluginSample extends Plugin {
             let res = response.data
             if (res.data.is_public_server) {
                 utils.disable("home_page")
-
             } else {
                 utils.enable("home_page")
+            }
+            if (res.data.enable_token == undefined) {
+                utils.disable("server_token")
+            } else {
+                if (res.data.enable_token == true) {
+                    utils.enable("server_token")
+                } else {
+                    utils.disable("server_token")
+                }
             }
 
         }).catch(function (error) {
@@ -1422,6 +1468,8 @@ export default class PluginSample extends Plugin {
 
         let headers = {}
         headers['Content-Type'] = 'application/json'
+        headers['Authorization'] = utils.get("server_token")
+
         if (this.isWeb()) {
             headers['cros-status'] = true
         }
@@ -1440,7 +1488,14 @@ export default class PluginSample extends Plugin {
 
             })
             .catch(function (error) {
-                console.error(error)
+                switch (error.response.data.err) {
+                    case 4:
+                        pushErrMsg(i18n.result_error_token)
+                        break;
+                    default:
+                        console.error(error)
+                        break
+                }
                 g.data = error.message
                 return g
             })
@@ -1467,6 +1522,8 @@ export default class PluginSample extends Plugin {
 
         let headers = {}
         headers['Content-Type'] = 'application/json'
+        headers['Authorization'] = utils.get("server_token")
+
         if (this.isWeb()) {
             headers['cros-status'] = true
         }
@@ -1492,8 +1549,14 @@ export default class PluginSample extends Plugin {
             return g;
         }.bind(this))
             .catch(function (error) {
-                console.error(error);
-                // 处理错误
+                switch (error.response.data.err) {
+                    case 4:
+                        pushErrMsg(i18n.result_error_token)
+                        break;
+                    default:
+                        console.error(error)
+                        break
+                }
                 g.data = error.message;
                 return g;
             });
@@ -1501,6 +1564,7 @@ export default class PluginSample extends Plugin {
     }
     async access_key_disable() {
         const i18n = this.i18n
+        let utils = this.settingUtils
 
         let g: IFuncData = {
             err: true,
@@ -1515,10 +1579,12 @@ export default class PluginSample extends Plugin {
 
         };
 
-        const url = this.settingUtils.get("address") + "/api/key?action=disable"
+        const url = utils.get("address") + "/api/key?action=disable"
 
         let headers = {}
         headers['Content-Type'] = 'application/json'
+        headers['Authorization'] = utils.get("server_token")
+
         if (this.isWeb()) {
             headers['cros-status'] = true
         }
@@ -1543,8 +1609,14 @@ export default class PluginSample extends Plugin {
             return g;
         }.bind(this))
             .catch(function (error) {
-                console.error(error);
-                // 处理错误
+                switch (error.response.data.err) {
+                    case 4:
+                        pushErrMsg(i18n.result_error_token)
+                        break;
+                    default:
+                        console.error(error)
+                        break
+                }
                 g.data = error.message;
                 return g;
             });
@@ -1552,7 +1624,7 @@ export default class PluginSample extends Plugin {
     }
     async access_key_get() {
         const utils = this.settingUtils
-
+        const i18n = this.i18n
         utils.set("access_key_enable", false)
         utils.set("access_key", "")
 
@@ -1563,6 +1635,8 @@ export default class PluginSample extends Plugin {
 
         let headers = {}
         headers['Content-Type'] = 'application/json'
+        headers['Authorization'] = utils.get("server_token")
+
         if (this.isWeb()) {
             headers['cros-status'] = true
         }
@@ -1570,6 +1644,7 @@ export default class PluginSample extends Plugin {
         axios({
             method: "GET",
             url: url,
+            headers: headers,
         }).then(function (response) {
             let data = response.data;
 
@@ -1583,10 +1658,17 @@ export default class PluginSample extends Plugin {
             }
 
         })
-            .catch(function (error) {
-                console.error(error);
-                return;
-            });
+        .catch(function (error) {
+            switch (error.response.data.err) {
+                case 4:
+                    pushErrMsg(i18n.result_error_token)
+                    break;
+                default:
+                    console.error(error)
+                    break
+            }
+            return;
+        });
 
     }
     copy_link(content: string) {
@@ -1610,12 +1692,15 @@ export default class PluginSample extends Plugin {
         }
     }
     async get_url_list() {
+        const utils = this.settingUtils
+        const i18n = this.i18n
         let appid = await this.get_system_id();
         let server_address = this.settingUtils.get("address");
         const url = server_address + "/api/getlinkall?appid=" + appid
 
         let headers = {}
         headers['Content-Type'] = 'application/json'
+        headers['Authorization'] = utils.get("server_token")
 
         let ret: PageManagerTableData[]
         ret = await axios.get(url, { headers })
@@ -1624,8 +1709,14 @@ export default class PluginSample extends Plugin {
                 return data
             })
             .catch(function (error) {
-                console.error(error)
-                pushErrMsg(error)
+                switch (error.response.data.err) {
+                    case 4:
+                        pushErrMsg(i18n.result_error_token)
+                        break;
+                    default:
+                        console.error(error)
+                        break
+                }
                 return ret
             })
 
@@ -1655,6 +1746,8 @@ export default class PluginSample extends Plugin {
 
         let headers = {}
         headers['Content-Type'] = 'application/json'
+        headers['Authorization'] = utils.get("server_token")
+
         if (this.isWeb()) {
             headers['cros-status'] = true
         }
@@ -1669,7 +1762,14 @@ export default class PluginSample extends Plugin {
                     pushErrMsg(i18n.msg_exec_failed)
                 }
             }).catch(function (error) {
-                console.error(error)
+                switch (error.response.data.err) {
+                    case 4:
+                        pushErrMsg(i18n.result_error_token)
+                        break;
+                    default:
+                        console.error(error)
+                        break
+                }
             })
         } else {
 
@@ -1683,7 +1783,14 @@ export default class PluginSample extends Plugin {
                     pushErrMsg(i18n.msg_exec_failed)
                 }
             }).catch(function (error) {
-                console.error(error)
+                switch (error.response.data.err) {
+                    case 4:
+                        pushErrMsg(i18n.result_error_token)
+                        break;
+                    default:
+                        console.error(error)
+                        break
+                }
             })
 
         }
@@ -1703,6 +1810,8 @@ export default class PluginSample extends Plugin {
 
         let headers = {}
         headers['Content-Type'] = 'application/json'
+        headers['Authorization'] = utils.get("server_token")
+
         if (this.isWeb()) {
             headers['cros-status'] = true
         }
@@ -1717,7 +1826,14 @@ export default class PluginSample extends Plugin {
                 return false
             }
         }).catch(function (error) {
-            console.error(error)
+            switch (error.response.data.err) {
+                case 4:
+                    pushErrMsg(i18n.result_error_token)
+                    break;
+                default:
+                    console.error(error)
+                    break
+            }
             return false
 
         })
