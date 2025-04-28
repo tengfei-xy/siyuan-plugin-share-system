@@ -1534,6 +1534,7 @@ export default class PluginSample extends Plugin {
             method: "POST",
             url: url,
             data: data,
+            headers: headers
         }).then(function (response) {
             let data = response.data;
 
@@ -1595,6 +1596,7 @@ export default class PluginSample extends Plugin {
             method: "POST",
             url: url,
             data: data,
+            headers: headers
         }).then(function (response) {
             let data = response.data;
 
