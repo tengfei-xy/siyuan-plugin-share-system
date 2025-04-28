@@ -1,11 +1,12 @@
 name: Create Release on Tag Push
 
 on:
-  push:
-    tags:
-      - "v*"
   workflow_dispatch:
     inputs:
+      version:
+        description: 'Version number for the release (e.g., v1.2.3)'
+        required: true
+        type: string
       make_release:
         description: 'Do you want to create a release?'
         required: true
@@ -19,6 +20,8 @@ jobs:
       # Checkout
       - name: Checkout
         uses: actions/checkout@v3
+        with:
+          fetch-depth: 0  # Required for accurate versioning
 
       # Install Node.js
       - name: Install Node.js
@@ -59,11 +62,19 @@ jobs:
       - name: Build for production
         run: pnpm build
 
+      # Package the build output
+      - name: Package build output
+        run: |
+          zip -r package.zip ./dist  # Adjust './dist' to the actual build output directory
+
       - name: Release
+        if: ${{ github.event.inputs.make_release == 'true' }}
         uses: ncipollo/release-action@v1
         with:
           allowUpdates: true
           artifactErrorsFailBuild: true
           artifacts: "package.zip"
           token: ${{ secrets.GITHUB_TOKEN }}
-          prerelease: true
+          tag: ${{ github.event.inputs.version }}
+          name: ${{ github.event.inputs.version }}
+          prerelease: ${{ contains(github.event.inputs.version, '-') }} # Set prerelease based on version string
