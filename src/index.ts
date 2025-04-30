@@ -1192,7 +1192,9 @@ export default class PluginSample extends Plugin {
         formData.append('file', blob);
 
         let headers = {}
+        const utils = this.settingUtils
         headers['Content-Type'] = 'multipart/form-data';
+        headers['Authorization'] = utils.get("server_token")
         if (this.isWeb()) {
             headers['cros-status'] = true
         }
@@ -1532,6 +1534,7 @@ export default class PluginSample extends Plugin {
             method: "POST",
             url: url,
             data: data,
+            headers: headers
         }).then(function (response) {
             let data = response.data;
 
@@ -1593,6 +1596,7 @@ export default class PluginSample extends Plugin {
             method: "POST",
             url: url,
             data: data,
+            headers: headers
         }).then(function (response) {
             let data = response.data;
 
