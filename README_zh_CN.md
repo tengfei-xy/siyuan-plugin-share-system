@@ -24,7 +24,7 @@
 
 ## 版本说明
 
-- v2.4.6：优化英文提示。[#32](https://github.com/tengfei-xy/siyuan-plugin-share-system/pull/32)
+- v2.4.6：优化英文提示[#32](https://github.com/tengfei-xy/siyuan-plugin-share-system/pull/32)， 修改错误提示。
 - v2.4.5：修复错误。[#30](https://github.com/tengfei-xy/siyuan-plugin-share-system/pull/30)
 - v2.4.4：添加服务器鉴权功能。
 - v2.4.3：使用浏览器访问思源笔记本时，自动启用跨域。优化首页按钮的可用性，删除访问码输入框。
