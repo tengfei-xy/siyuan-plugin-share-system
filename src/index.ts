@@ -653,14 +653,14 @@ export default class PluginSample extends Plugin {
     }
     // 打开插件页面时
     async open_plugin_page() {
-        this.get_server_info()
-
-        try {
+        // 禁用基本功能
+        this.disableInput()
+        
+        let ok = await this.get_server_info()
+        if (ok){
             await this.get_link()
-        } catch (error) {
-            console.error(error)
-            pushErrMsg(error.message, 7000)
         }
+        // 无论如何都要打开设置页面，以设置服务器地址
         this.openSetting();
     }
     async get_lang() {
@@ -1333,6 +1333,16 @@ export default class PluginSample extends Plugin {
         pushMsg(this.i18n.result_create_ok)
 
     }
+    disableInput(){
+        let utils = this.settingUtils
+
+        utils.disable("delete_share")
+        utils.disable("copy_link")
+        utils.disable("copy_link_full")
+        utils.set("share_link", "")
+        utils.disable("access_key_enable")
+        utils.disable("access_key")
+    }
     // 功能: 获取分享链接
     // 返回: IFuncData结构体，包含err和data，
     // 返回参数: err 表示请求是否成功
@@ -1356,13 +1366,6 @@ export default class PluginSample extends Plugin {
         if (this.isWeb()) {
             headers['cros-status'] = true
         }
-
-        utils.disable("delete_share")
-        utils.disable("copy_link")
-        utils.disable("copy_link_full")
-        utils.set("share_link", "")
-        utils.disable("access_key_enable")
-        utils.disable("access_key")
 
 
         let ret = false
@@ -1400,13 +1403,18 @@ export default class PluginSample extends Plugin {
 
             })
             .catch(function (error) {
+                if (error.response == undefined) {
+                    utils.disable("create_share")
+                    pushErrMsg(i18n.err_network)
+                    return
+                }
                 switch (error.response.data.err) {
                     case 4:
                         pushErrMsg(i18n.result_error_token)
                         break;
                     default:
                         utils.disable("create_share")
-                        console.error(error)
+                        pushErrMsg(i18n.err_network)
                         break
                 }
                 return
@@ -1420,11 +1428,14 @@ export default class PluginSample extends Plugin {
 
     async get_server_info() {
         let utils = this.settingUtils
-        const url = utils.get("address") + "/api/info"
+        const i18n = this.i18n;
 
+        const url = utils.get("address") + "/api/info"
+        let ret = false
         let headers = {}
 
         await axios.get(url, { headers, timeout: 10000 }).then(function (response) {
+            ret= true
             let res = response.data
             if (res.data.is_public_server) {
                 utils.disable("home_page")
@@ -1443,8 +1454,10 @@ export default class PluginSample extends Plugin {
 
         }).catch(function (error) {
             utils.disable("home_page")
-            console.error(error)
+            pushErrMsg(i18n.result_system_access_failed)
+            console.log(error)
         })
+        return ret;
 
     }
     // 功能: 删除分享链接
@@ -1662,17 +1675,17 @@ export default class PluginSample extends Plugin {
             }
 
         })
-        .catch(function (error) {
-            switch (error.response.data.err) {
-                case 4:
-                    pushErrMsg(i18n.result_error_token)
-                    break;
-                default:
-                    console.error(error)
-                    break
-            }
-            return;
-        });
+            .catch(function (error) {
+                switch (error.response.data.err) {
+                    case 4:
+                        pushErrMsg(i18n.result_error_token)
+                        break;
+                    default:
+                        console.error(error)
+                        break
+                }
+                return;
+            });
 
     }
     copy_link(content: string) {
