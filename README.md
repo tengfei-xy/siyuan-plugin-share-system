@@ -24,6 +24,7 @@ Export html files and other resource files and upload them to the server. The se
 
 ## Version description
 
+- v2.4.6: Improve English translation. [#32](https://github.com/tengfei-xy/siyuan-plugin-share-system/pull/32)
 - v2.4.5: Fixed bugs. [#30](https://github.com/tengfei-xy/siyuan-plugin-share-system/pull/30)
 - v2.4.4: Added server authentication function.
 - v2.4.3: Automatically enable cross-domain when accessing Source Hana Notebook using a browser. Optimize the usability of the homepage button.Delete the access code input box.
