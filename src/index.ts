@@ -466,9 +466,7 @@ export default class PluginSample extends Plugin {
             title: this.i18n.menu_access_key_title,
             description: this.i18n.menu_access_key_desc,
             action: {
-                callback: async () => {
-                    this.settingUtils.takeAndSave("access_key")
-                }
+                callback: async () => {\n                    this.settingUtils.takeAndSave("access_key")\n                    if (this.settingUtils.get("access_key_enable")) {\n                        this.access_key_enable()\n                    }\n                }
             }
 
         });
